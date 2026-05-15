@@ -1,8 +1,8 @@
 {
     // Comments are accepted in the manifest, even though it is JSON.
     "manifest_version": 3,
-    "name": "Chrome Extension v3 Starter",
-    "description": "A minimal example of a chrome extension using manifest v3",
+    "name": "Moodle Theme Addon",
+    "description": "an addon to apply themes to Moodle",
     "version": "0.0.1",
     "icons": {
         "16": "logo/logo-16.png",
@@ -11,10 +11,14 @@
     },
     "options_page": "settings/settings.html",
     "action": {
-        "default_title": "Chrome Addon v3 Starter",
-        "default_popup": "popup/popup.html"
+        "default_title": "Apply CSS",
+        "default_icon": {
+            "16": "logo/logo-16.png",
+            "48": "logo/logo-48.png",
+            "128": "logo/logo-128.png"
+        }
     },
-    "permissions": [],
+    "permissions": ["activeTab", "scripting", "storage", "tabs"],
     "host_permissions": [
         "*://*/*"
     ],
@@ -23,6 +27,6 @@
     },
     "content_scripts": [{
         "js": ["foreground.js"],
-        "matches": ["https://github.com/*"]
+        "matches": ["*://moodle.informatik.tu-darmstadt.de/*"]
     }]
 }

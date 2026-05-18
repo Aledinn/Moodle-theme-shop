@@ -1,5 +1,24 @@
-console.log("This prints to the console of the service worker (background script)")
+const css = 'body { border: 20px solid black; }';
+let editedCss = false;
 
-// Importing and using functionality from external files is also possible.
-importScripts('service-worker-utils.js')
-importScripts('cssinject.js')
+
+chrome.action.onClicked.addListener((tab) => {
+  if (!editedCss) {
+    chrome.scripting.insertCSS({
+        target: { tabId: tab.id },
+        css : css,
+    }).then(() => {
+    console.log('CSS injected successfully.');
+        });
+    editedCss = true;
+  }
+  else {
+    chrome.scripting.removeCSS({
+        target: { tabId: tab.id },
+        css : css,
+    }).then(() => {
+    console.log('CSS removed successfully.');
+        });
+    editedCss = false;
+  }
+});

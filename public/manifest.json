@@ -27,6 +27,6 @@
     },
     "content_scripts": [{
         "js": ["foreground.js"],
-        "matches": ["*://moodle.informatik.tu-darmstadt.de/*"]
+        "matches": ["<all_urls>"]
     }]
 }

@@ -1,0 +1,27 @@
+{
+  "name": "Moodle-theme-shop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cssinject.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AleddineAbsi/Moodle-theme-shop.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AleddineAbsi/Moodle-theme-shop/issues"
+  },
+  "homepage": "https://github.com/AleddineAbsi/Moodle-theme-shop#readme",
+  "devDependencies": {
+    "@types/chrome": "^0.1.42",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13"
+  }
+}

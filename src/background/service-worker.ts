@@ -1,7 +1,8 @@
 const css = 'body { border: 20px solid black; }';
-let editedTabs = [];
+let editedTabs: number[] = [];
 
 chrome.action.onClicked.addListener((tab) => {
+  if (!tab.id) return;
   if (tab && !editedTabs.includes(tab.id)) {
     editedTabs.push(tab.id);
     chrome.scripting.insertCSS({
@@ -17,7 +18,7 @@ chrome.action.onClicked.addListener((tab) => {
         editedTabs.splice(index, 1);   
     }
     chrome.scripting.removeCSS({
-        target: { tabId: tab.id },
+        target: { tabId : tab.id },
         css : css,
     }).then(() => {
     console.log('CSS removed successfully.');

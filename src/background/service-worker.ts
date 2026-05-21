@@ -35,7 +35,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 //inject css when the button in the popup is clicked
 chrome.runtime.onMessage.addListener((message, sender) => {
-    if (message.type === "apply_theme") {
+    if (message.type === "toggle_theme") {
         getCurrentTab().then((tab) => {
         if  (!tab || !tab.id || !tab.url ||!isInScope(tab.url!, allowedUrls)){
             return;
@@ -51,4 +51,14 @@ chrome.runtime.onMessage.addListener((message, sender) => {
     }
     );}
 });
+
+chrome.runtime.onMessage.addListener((message, sender) => { 
+    if (message.type === "select_element") {
+        getCurrentTab().then((tab) => {
+            if (!tab || !tab.id) {
+                return;
+            }
+            chrome.tabs.sendMessage(tab.id, { type: "select_element" });
+        });
+    }});
 

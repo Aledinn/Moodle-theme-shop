@@ -1,5 +1,6 @@
 const css = 'body { border: 20px solid black; }';
-let editedTabs: number[] = [];
+let allowedUrls: string[] = ["https://moodle."];
+let appliedUrls: string[] = [];
 
 async function getCurrentTab() {
     let queryOptions = { active: true, lastFocusedWindow: true };
@@ -7,51 +8,47 @@ async function getCurrentTab() {
     return tab;
 }
 
-chrome.runtime.onMessage.addListener((message, sender) => {
-  if (message.type === "apply_theme") {
-    console.log("Apply theme message received");
-  }
-});
-//load css if tab already edited before
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url?.startsWith("https://moodle.")) {
-    if (editedTabs.includes(tabId)) {
-      chrome.scripting.insertCSS({
-        target: { tabId: tabId },
-        css: css
-      });
+async function toggleCSS(tab: chrome.tabs.Tab, css: string,toggle: boolean) {
+    if (toggle) {
+        chrome.scripting.insertCSS({
+            target: { tabId: tab.id! },
+            css: css
+        });
+    } else {
+        chrome.scripting.removeCSS({
+            target: { tabId: tab.id! },
+            css: css
+        });
     }
+}
+
+function isInScope(url: string, list: string[]) {
+    return list.some((presentUrl) => url.startsWith(presentUrl));
+}
+
+//load css if url already in scope
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && isInScope(tab.url!,appliedUrls)) {
+      toggleCSS(tab, css, true);
   }
 });
 
-//inject css when the extension icon is clicked
+//inject css when the button in the popup is clicked
 chrome.runtime.onMessage.addListener((message, sender) => {
-  if (message.type === "apply_theme") {
-    getCurrentTab().then((tab) => {
-      if (!tab?.id) return;
-      console.log(tab.url);
-      if (tab.url?.startsWith("https://moodle.")) {
-        console.log("Moodle page detected");
-        if (tab && !editedTabs.includes(tab.id)) {
-        editedTabs.push(tab.id);
-        chrome.scripting.insertCSS({
-            target: { tabId: tab.id },
-            css : css,
-        }).then(() => {
-        console.log('CSS injected successfully.');
-            });
-    }
-    else {
-        let index = editedTabs.indexOf(tab.id);
-        if (index > -1) {
-            editedTabs.splice(index, 1);   
+    if (message.type === "apply_theme") {
+        getCurrentTab().then((tab) => {
+        if  (!tab || !tab.id || !tab.url ||!isInScope(tab.url!, allowedUrls)){
+            return;
         }
-        chrome.scripting.removeCSS({
-            target: { tabId : tab.id },
-            css : css,
-        }).then(() => {
-        console.log('CSS removed successfully.');
-            });
+        else if (!isInScope(tab.url!, appliedUrls)) {
+            toggleCSS(tab, css, true);
+            appliedUrls.push(tab.url);
+        }
+        else {
+            toggleCSS(tab, css, false);
+            appliedUrls = appliedUrls.filter((url) => url !== tab.url);
+        }
     }
-  }
-});}});
+    );}
+});
+

@@ -1,4 +1,4 @@
-const css = 'body { border: 20px solid black; }';
+let css = 'body { border: 20px solid black; }';
 let allowedUrls: string[] = ["https://moodle."];
 let appliedUrls: string[] = [];
 
@@ -62,3 +62,9 @@ chrome.runtime.onMessage.addListener((message, sender) => {
         });
     }});
 
+chrome.runtime.onMessage.addListener((message, sender) => { 
+    if (message.type === "chosen_element") {
+        const selector = message.selector;
+        console.log("Received chosen element selector in background script:", selector);
+        css = `${selector} { border: 20px solid black; background-color: red !important; }`;
+    }});

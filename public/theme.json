@@ -1,0 +1,29 @@
+{
+    "name" : "example theme",
+    "site" : "moodle.example.com",
+    "author" : "John Doe",
+    "description" : "An example theme for Moodle",
+    "version" : "1.0",
+    "rules": [
+        {
+            "selector": "body",
+            "properties": {
+                "background-color": "#f0f0f0"
+            }
+        },
+        {
+            "selector": ".header",
+            "properties": {
+                "background-color": "#333",
+                "color": "#fff"
+            }
+        },
+        {
+            "selector": ".footer",
+            "properties": {
+                "background-color": "#333",
+                "color": "#fff"
+            }
+        }
+    ]
+}

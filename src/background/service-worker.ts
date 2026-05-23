@@ -1,3 +1,25 @@
+import { initializeStorage, upsertThemeForSite, type Theme } from "./theme-storage";
+
+const exampleTheme: Theme = {
+    name: "Example Theme",
+    site: "moodle.example.com",
+    author: "John Doe",
+    description: "An example theme for Moodle",
+    version: "1.0.0",
+    rules: [
+        {
+            selector: "body",
+            properties: {
+                "background-color": "#f0f0f0"
+            }
+        }
+    ]
+};
+
+initializeStorage().then(() => {
+    upsertThemeForSite(exampleTheme);
+});
+
 let css = 'body { border: 20px solid black; }';
 let allowedUrls: string[] = ["https://moodle."];
 let appliedUrls: string[] = [];
@@ -68,3 +90,4 @@ chrome.runtime.onMessage.addListener((message, sender) => {
         console.log("Received chosen element selector in background script:", selector);
         css = `${selector} { border: 20px solid black; background-color: red !important; }`;
     }});
+

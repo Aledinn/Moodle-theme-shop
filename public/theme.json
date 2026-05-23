@@ -6,20 +6,20 @@
     "version" : "1.0",
     "rules": [
         {
-            "selector": "body",
+            "selector": "h2.h3.sectionname",
             "properties": {
                 "background-color": "#f0f0f0"
             }
         },
         {
-            "selector": ".header",
+            "selector": "h1.h2.mb-0",
             "properties": {
                 "background-color": "#333",
                 "color": "#fff"
             }
         },
         {
-            "selector": ".footer",
+            "selector": "div div p",
             "properties": {
                 "background-color": "#333",
                 "color": "#fff"

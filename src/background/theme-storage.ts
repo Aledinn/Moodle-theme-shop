@@ -20,6 +20,7 @@ const createEmptyInstalledThemes = (): InstalledThemes => ({
     themesBySite: {}
 });
 
+
 function isInstalledThemes(value: unknown): value is InstalledThemes {
     return (
         typeof value === "object" &&
@@ -62,4 +63,12 @@ export async function upsertThemeForSite(theme: Theme) {
     }
 }
 
+export async function getThemeForSite(site: string): Promise<Theme | null> {
+    const data = await chrome.storage.local.get("installedThemes");
 
+    if (!isInstalledThemes(data.installedThemes)) {
+        return null;
+    }
+
+    return data.installedThemes.themesBySite[site] || null;
+}

@@ -17,3 +17,16 @@ export function getDomainFromUrl(url: string): string | null {
         return null;
     }
 }
+
+export async function getAllowedCurrentTabContext(allowedUrls: string[]): Promise<{ domain: string, tab: chrome.tabs.Tab } | null> {
+    const tab = await getCurrentTab();
+    
+    if  (!tab || !tab.id || !tab.url){
+        return null;
+    }
+    const domain = getDomainFromUrl(tab.url);
+    if (!domain || !isInScope(domain, allowedUrls)) {
+        return null;
+    }
+    return { domain, tab };
+}

@@ -1,7 +1,7 @@
 import { toggleCSS, themeToCss } from "./css-injection";
 import { loadExampleTheme } from "./theme-loader";
 import { initializeStorage, upsertThemeForSite, getThemeForSite, Theme } from "./theme-storage";
-import { getCurrentTab, isInScope, getDomainFromUrl, getAllowedCurrentTabContext } from "./utils";
+import { getCurrentTab, isInScope, getDomainFromUrl, getCurrentTabContext } from "./utils";
 
 initializeStorage();
 
@@ -10,12 +10,14 @@ let allowedUrls: string[] = ["moodle.informatik.tu-darmstadt.de"];
 let appliedUrls: string[] = [];
 let draftTheme: Theme = { 
     name: "Draft Theme",
-    site: "example.com",
+    site: "moodle.informatik.tu-darmstadt.de",
     author: "Author Name",
     description: "A draft theme for testing",
     version: "0.1",
     rules: []
 };
+let previewCss = '';
+let savedCss = '';
 
 //load css if url already in scope
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -49,7 +51,7 @@ async function handleMessage(message: any, sender: chrome.runtime.MessageSender)
     }
 
     if (message.type === "chosen_element") {
-        handleChosenElement(message);
+        await handleChosenElement(message);
         return;
     }
 
@@ -57,10 +59,14 @@ async function handleMessage(message: any, sender: chrome.runtime.MessageSender)
         await handleInstallTheme();
         return;
     }
+    if (message.type === "save_draft_theme") {
+        await handleSaveDraftTheme();
+        return;
+    }
 }
 
 async function handleToggleTheme() {
-    const context = await getAllowedCurrentTabContext(allowedUrls);
+    const context = await getCurrentTabContext(allowedUrls);
     if (!context) {
         return;
     }
@@ -107,18 +113,22 @@ async function handleChosenElement(message: any) {
             }
         });
     }
-    let css = themeToCss(draftTheme);
-    const context = await getAllowedCurrentTabContext(allowedUrls);
+
+    const context = await getCurrentTabContext(allowedUrls);
     if (!context) {
         return;
     }
     const { domain, tab } = context;
-    toggleCSS(tab, css, true);
+    if (previewCss) {
+        toggleCSS(tab, previewCss, false);
+    }
+    previewCss = themeToCss(draftTheme);
+    toggleCSS(tab, previewCss, true);
     console.log("Received chosen element selector in background script:", selector);
 }
 
 async function handleInstallTheme() {
-    const context = await getAllowedCurrentTabContext(allowedUrls);
+    const context = await getCurrentTabContext(allowedUrls);
     if (!context) {
         return;
     }
@@ -129,4 +139,18 @@ async function handleInstallTheme() {
     css = themeToCss(theme);
     toggleCSS(tab, css, true);
     appliedUrls.push(domain);
+}
+
+async function handleSaveDraftTheme() {
+    let context = await getCurrentTabContext();
+    if (!context) {
+        console.error("No allowed tab context found for saving draft theme");
+        return;
+    }
+    const { domain } = context;
+    draftTheme.site = domain;
+    await upsertThemeForSite(draftTheme);
+    savedCss = themeToCss(draftTheme);
+    console.log("Draft theme saved");
+    return;
 }

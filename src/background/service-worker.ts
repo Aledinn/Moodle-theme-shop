@@ -1,6 +1,6 @@
 import { toggleCSS, themeToCss } from "./css-injection";
 import { loadExampleTheme } from "./theme-loader";
-import { initializeStorage, upsertThemeForSite, getThemeForSite } from "./theme-storage";
+import { initializeStorage, upsertThemeForSite, getThemeForSite, Theme } from "./theme-storage";
 import { getCurrentTab, isInScope, getDomainFromUrl, getAllowedCurrentTabContext } from "./utils";
 
 initializeStorage();
@@ -8,7 +8,14 @@ initializeStorage();
 let css = 'body { border: 20px solid black; }';
 let allowedUrls: string[] = ["moodle.informatik.tu-darmstadt.de"];
 let appliedUrls: string[] = [];
-let drafTheme = '';
+let draftTheme: Theme = { 
+    name: "Draft Theme",
+    site: "example.com",
+    author: "Author Name",
+    description: "A draft theme for testing",
+    version: "0.1",
+    rules: []
+};
 
 //load css if url already in scope
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -85,8 +92,28 @@ async function handleSelectElement() {
     chrome.tabs.sendMessage(tab.id, { type: "select_element" });
 }
 
-function handleChosenElement(message: any) {
+async function handleChosenElement(message: any) {
     const selector = message.selector;
+    const existingRule = draftTheme.rules.find((rule) => rule.selector === selector);
+    if (existingRule) {
+        existingRule.properties["background-color"] = "blue";
+    }
+    else
+    {
+        draftTheme.rules.push({
+            selector,
+            properties: {
+                "background-color": "red"
+            }
+        });
+    }
+    let css = themeToCss(draftTheme);
+    const context = await getAllowedCurrentTabContext(allowedUrls);
+    if (!context) {
+        return;
+    }
+    const { domain, tab } = context;
+    toggleCSS(tab, css, true);
     console.log("Received chosen element selector in background script:", selector);
 }
 

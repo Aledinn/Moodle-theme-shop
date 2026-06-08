@@ -1,7 +1,7 @@
 import { toggleCSS, themeToCss } from "./css-injection";
 import { loadExampleTheme } from "./theme-loader";
 import { initializeStorage, upsertThemeForSite, getThemeForSite, Theme } from "./theme-storage";
-import { getCurrentTab, isInScope, getDomainFromUrl, getCurrentTabContext } from "./utils";
+import { getCurrentTab, isInScope, getDomainFromUrl, getCurrentTabContext, markDomainAsApplied } from "./utils";
 
 initializeStorage();
 
@@ -18,6 +18,8 @@ let draftTheme: Theme = {
 };
 let previewCss = '';
 let savedCss = '';
+let selectedCssProperty = "background-color";
+let selectedCssValue = "#ff0000";
 
 //load css if url already in scope
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -45,11 +47,6 @@ async function handleMessage(message: any, sender: chrome.runtime.MessageSender)
         return;
     }
 
-    if (message.type === "select_element") {
-        await handleSelectElement();
-        return;
-    }
-
     if (message.type === "chosen_element") {
         await handleChosenElement(message);
         return;
@@ -61,6 +58,12 @@ async function handleMessage(message: any, sender: chrome.runtime.MessageSender)
     }
     if (message.type === "save_draft_theme") {
         await handleSaveDraftTheme();
+        return;
+    }
+    if (message.type === "select_element") {
+        selectedCssProperty = message.property;
+        selectedCssValue = message.value;
+        await handleSelectElement();
         return;
     }
 }
@@ -102,14 +105,14 @@ async function handleChosenElement(message: any) {
     const selector = message.selector;
     const existingRule = draftTheme.rules.find((rule) => rule.selector === selector);
     if (existingRule) {
-        existingRule.properties["background-color"] = "blue";
+        existingRule.properties[selectedCssProperty] = selectedCssValue;
     }
     else
     {
         draftTheme.rules.push({
             selector,
             properties: {
-                "background-color": "red"
+                [selectedCssProperty]: selectedCssValue
             }
         });
     }
@@ -151,6 +154,8 @@ async function handleSaveDraftTheme() {
     draftTheme.site = domain;
     await upsertThemeForSite(draftTheme);
     savedCss = themeToCss(draftTheme);
+    markDomainAsApplied(domain, appliedUrls);
+    previewCss = '';
     console.log("Draft theme saved");
     return;
 }

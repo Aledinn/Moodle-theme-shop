@@ -30,3 +30,9 @@ export async function getCurrentTabContext(allowedUrls?: string[]): Promise<{ do
     }
     return { domain, tab };
 }
+
+export function markDomainAsApplied(domain: string, list: string[]) {
+    if (!isInScope(domain, list)) {
+        list.push(domain);
+    }
+}

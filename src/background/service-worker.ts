@@ -1,183 +1,110 @@
-import { toggleCSS, themeToCss } from "./css-injection";
+import {
+    applyThemeToTab,
+    reapplyThemeIfEnabled,
+    replaceThemeCssInTab,
+    toggleThemeForTab
+} from "./theme-application";
+import { selectThemeRule, updateSelectedThemeStyle } from "./theme-editor";
 import { loadExampleTheme } from "./theme-loader";
-import { initializeStorage, upsertThemeForSite, getThemeForSite, Theme } from "./theme-storage";
-import { getCurrentTab, isInScope, getDomainFromUrl, getCurrentTabContext, markDomainAsApplied } from "./utils";
+import { initializeStorage, upsertThemeForSite } from "./theme-storage";
+import { getCurrentTab, getCurrentTabContext } from "./utils";
+import type { ExtensionMessage } from "../shared/messages";
+
+const allowedDomains = ["moodle.informatik.tu-darmstadt.de"];
 
 initializeStorage();
 
-let css = 'body { border: 20px solid black; }';
-let allowedUrls: string[] = ["moodle.informatik.tu-darmstadt.de"];
-let appliedUrls: string[] = [];
-let activeEditingTheme: Theme = { 
-    name: "Active Editing Theme",
-    site: "moodle.informatik.tu-darmstadt.de",
-    author: "Author Name",
-    description: "Theme currently being edited",
-    version: "0.1",
-    rules: []
-};
-let activeInjectedCss = '';
-let selectedSelector: string | null = null;
+chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
+    if (changeInfo.status !== "complete") {
+        return;
+    }
 
-//load css if url already in scope
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if(changeInfo.status !== 'complete' || !tab.url) {
-    return;
-  }
-  let tabUrl = getDomainFromUrl(tab.url);
-  if (!tabUrl) {
-    return;
-  }
-  let theme = await getThemeForSite(tabUrl);
-  if (isInScope(tabUrl, appliedUrls) && theme) {
-    css = themeToCss(theme);
-    activeInjectedCss = css;
-    toggleCSS(tab, css, true);
-  }
+    await reapplyThemeIfEnabled(tab);
 });
 
-chrome.runtime.onMessage.addListener((message, sender) => {
-    handleMessage(message, sender);
+chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
+    handleMessage(message);
 });
 
-async function handleMessage(message: any, sender: chrome.runtime.MessageSender) {
-    if (message.type === "toggle_theme") {
-        await handleToggleTheme();
-        return;
-    }
+async function handleMessage(message: ExtensionMessage) {
+    switch (message.type) {
+        case "toggle_theme":
+            await handleToggleTheme();
+            return;
 
-    if (message.type === "chosen_element") {
-        await handleChosenElement(message);
-        return;
-    }
+        case "select_element":
+            await handleSelectElement();
+            return;
 
-    if (message.type === "install_theme") {
-        await handleInstallTheme();
-        return;
-    }
-    if (message.type === "select_element") {
-        await handleSelectElement();
-        return;
-    }
-    if (message.type === "update_selected_style") {
-        await handleUpdateSelectedStyle(message);
-        return;
-    }
-}
+        case "chosen_element":
+            await handleChosenElement(message);
+            return;
 
-async function handleUpdateSelectedStyle(message: any) {
-    if (!selectedSelector) {
-        console.error("No selected element to update");
-        return;
+        case "update_selected_style":
+            await handleUpdateSelectedStyle(message);
+            return;
+
+        case "install_theme":
+            await handleInstallTheme();
+            return;
+
+        default:
+            console.warn("Unknown message:", message);
+            return;
     }
-
-    const existingRule = activeEditingTheme.rules.find((rule) => rule.selector === selectedSelector);
-
-    if (!existingRule) {
-        return;
-    }
-
-    existingRule.properties[message.property] = message.value;
-    const context = await getCurrentTabContext();
-
-    if (!context) {
-        return;
-    }
-
-    const { domain, tab } = context;
-    activeEditingTheme.site = domain;
-    await upsertThemeForSite(activeEditingTheme);
-    if (activeInjectedCss) {
-        toggleCSS(tab, activeInjectedCss, false);
-    }
-
-    activeInjectedCss = themeToCss(activeEditingTheme);
-    toggleCSS(tab, activeInjectedCss, true);
-    markDomainAsApplied(domain, appliedUrls);
 }
 
 async function handleToggleTheme() {
-    const context = await getCurrentTabContext(allowedUrls);
+    const context = await getCurrentTabContext(allowedDomains);
     if (!context) {
         return;
     }
-    const { domain, tab } = context;
 
-    let theme = await getThemeForSite(domain);
-    let themeCss = theme ? themeToCss(theme) : '';
-
-    if (themeCss === '') {
-        return;
-    }
-
-    if (!isInScope(domain, appliedUrls)) {
-        toggleCSS(tab, themeCss, true);
-        activeInjectedCss = themeCss;
-        markDomainAsApplied(domain, appliedUrls);
-    }
-    else {
-        toggleCSS(tab, themeCss, false);
-        appliedUrls = appliedUrls.filter((url) => url !== domain);
-        if (activeInjectedCss === themeCss) {
-            activeInjectedCss = "";
-        }
-    }
+    await toggleThemeForTab(context.tab, context.domain);
 }
 
 async function handleSelectElement() {
     const tab = await getCurrentTab();
-    if (!tab || !tab.id) {
+    if (!tab?.id) {
         return;
     }
 
     chrome.tabs.sendMessage(tab.id, { type: "select_element" });
 }
 
-async function handleChosenElement(message: any) {
-    const selector = message.selector;
-    selectedSelector = selector;
-
+async function handleChosenElement(message: Extract<ExtensionMessage, { type: "chosen_element" }>) {
     const context = await getCurrentTabContext();
     if (!context) {
         return;
     }
-    const { domain } = context;
 
-    if (activeEditingTheme.site !== domain || activeEditingTheme.rules.length === 0) {
-        const storedTheme = await getThemeForSite(domain);
-
-        activeEditingTheme = storedTheme ?? {
-            name: "Active Editing Theme",
-            site: domain,
-            author: "Author Name",
-            description: "Theme currently being edited",
-            version: "0.1",
-            rules: []
-        };
-    }
-
-    const existingRule = activeEditingTheme.rules.find((rule) => rule.selector === selector);
-    if (!existingRule) {
-        activeEditingTheme.rules.push({
-            selector,
-            properties: {}
-        });
-    }
-    console.log("current rules:", JSON.stringify(activeEditingTheme.rules, null, 2));
-    console.log("Received chosen element selector in background script:", selector);
+    await selectThemeRule(context.domain, message.selector);
 }
 
-async function handleInstallTheme() {
-    const context = await getCurrentTabContext(allowedUrls);
+async function handleUpdateSelectedStyle(message: Extract<ExtensionMessage, { type: "update_selected_style" }>) {
+    const context = await getCurrentTabContext();
     if (!context) {
         return;
     }
-    const { domain, tab } = context;
 
-    let theme = await loadExampleTheme();
+    const updatedTheme = await updateSelectedThemeStyle(context.domain, message.property, message.value);
+    if (!updatedTheme) {
+        return;
+    }
+
+    await replaceThemeCssInTab(context.tab, context.domain, updatedTheme);
+}
+
+async function handleInstallTheme() {
+    const context = await getCurrentTabContext(allowedDomains);
+    if (!context) {
+        return;
+    }
+
+    const theme = await loadExampleTheme();
+    theme.site = context.domain;
+
     await upsertThemeForSite(theme);
-    css = themeToCss(theme);
-    toggleCSS(tab, css, true);
-    appliedUrls.push(domain);
+    await applyThemeToTab(context.tab, context.domain, theme);
 }
 

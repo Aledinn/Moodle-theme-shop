@@ -16,6 +16,17 @@ export type InstalledThemes = {
     themesBySite: Record<string, Theme>;
 };
 
+export function createEmptyThemeForSite(site: string): Theme {
+    return {
+        name: "Active Editing Theme",
+        site,
+        author: "Author Name",
+        description: "Theme currently being edited",
+        version: "0.1",
+        rules: []
+    };
+}
+
 const createEmptyInstalledThemes = (): InstalledThemes => ({
     themesBySite: {}
 });

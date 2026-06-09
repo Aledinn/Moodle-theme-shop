@@ -1,16 +1,17 @@
 import type { Theme } from "./theme-storage";
-export async function toggleCSS(tab: chrome.tabs.Tab, css: string, toggle: boolean) {
-    if (toggle) {
-        chrome.scripting.insertCSS({
-            target: { tabId: tab.id! },
-            css: css
-        });
-    } else {
-        chrome.scripting.removeCSS({
-            target: { tabId: tab.id! },
-            css: css
-        });
-    }
+
+export async function insertCss(tab: chrome.tabs.Tab, css: string) {
+    chrome.scripting.insertCSS({
+        target: { tabId: tab.id! },
+        css
+    });
+}
+
+export async function removeCss(tab: chrome.tabs.Tab, css: string) {
+    chrome.scripting.removeCSS({
+        target: { tabId: tab.id! },
+        css
+    });
 }
 
 

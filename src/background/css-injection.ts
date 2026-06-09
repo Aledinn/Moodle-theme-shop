@@ -19,7 +19,7 @@ export function themeToCss(theme: Theme): string {
     for (const rule of theme.rules){
         let ruleCss = `${rule.selector} {`;
         for (const [property, value] of Object.entries(rule.properties)) {
-            ruleCss += `${property}: ${value}; `;
+            ruleCss += `${property}: ${value} !important;`;
         }
         ruleCss += '}';
         console.log("Generated CSS for rule:", ruleCss);

@@ -8,18 +8,16 @@ initializeStorage();
 let css = 'body { border: 20px solid black; }';
 let allowedUrls: string[] = ["moodle.informatik.tu-darmstadt.de"];
 let appliedUrls: string[] = [];
-let draftTheme: Theme = { 
-    name: "Draft Theme",
+let activeEditingTheme: Theme = { 
+    name: "Active Editing Theme",
     site: "moodle.informatik.tu-darmstadt.de",
     author: "Author Name",
-    description: "A draft theme for testing",
+    description: "Theme currently being edited",
     version: "0.1",
     rules: []
 };
-let previewCss = '';
-let savedCss = '';
-let selectedCssProperty = "background-color";
-let selectedCssValue = "#ff0000";
+let activeInjectedCss = '';
+let selectedSelector: string | null = null;
 
 //load css if url already in scope
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -33,6 +31,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   let theme = await getThemeForSite(tabUrl);
   if (isInScope(tabUrl, appliedUrls) && theme) {
     css = themeToCss(theme);
+    activeInjectedCss = css;
     toggleCSS(tab, css, true);
   }
 });
@@ -56,16 +55,45 @@ async function handleMessage(message: any, sender: chrome.runtime.MessageSender)
         await handleInstallTheme();
         return;
     }
-    if (message.type === "save_draft_theme") {
-        await handleSaveDraftTheme();
-        return;
-    }
     if (message.type === "select_element") {
-        selectedCssProperty = message.property;
-        selectedCssValue = message.value;
         await handleSelectElement();
         return;
     }
+    if (message.type === "update_selected_style") {
+        await handleUpdateSelectedStyle(message);
+        return;
+    }
+}
+
+async function handleUpdateSelectedStyle(message: any) {
+    if (!selectedSelector) {
+        console.error("No selected element to update");
+        return;
+    }
+
+    const existingRule = activeEditingTheme.rules.find((rule) => rule.selector === selectedSelector);
+
+    if (!existingRule) {
+        return;
+    }
+
+    existingRule.properties[message.property] = message.value;
+    const context = await getCurrentTabContext();
+
+    if (!context) {
+        return;
+    }
+
+    const { domain, tab } = context;
+    activeEditingTheme.site = domain;
+    await upsertThemeForSite(activeEditingTheme);
+    if (activeInjectedCss) {
+        toggleCSS(tab, activeInjectedCss, false);
+    }
+
+    activeInjectedCss = themeToCss(activeEditingTheme);
+    toggleCSS(tab, activeInjectedCss, true);
+    markDomainAsApplied(domain, appliedUrls);
 }
 
 async function handleToggleTheme() {
@@ -84,11 +112,15 @@ async function handleToggleTheme() {
 
     if (!isInScope(domain, appliedUrls)) {
         toggleCSS(tab, themeCss, true);
-        appliedUrls.push(domain);
+        activeInjectedCss = themeCss;
+        markDomainAsApplied(domain, appliedUrls);
     }
     else {
         toggleCSS(tab, themeCss, false);
         appliedUrls = appliedUrls.filter((url) => url !== domain);
+        if (activeInjectedCss === themeCss) {
+            activeInjectedCss = "";
+        }
     }
 }
 
@@ -103,30 +135,35 @@ async function handleSelectElement() {
 
 async function handleChosenElement(message: any) {
     const selector = message.selector;
-    const existingRule = draftTheme.rules.find((rule) => rule.selector === selector);
-    if (existingRule) {
-        existingRule.properties[selectedCssProperty] = selectedCssValue;
-    }
-    else
-    {
-        draftTheme.rules.push({
-            selector,
-            properties: {
-                [selectedCssProperty]: selectedCssValue
-            }
-        });
-    }
+    selectedSelector = selector;
 
-    const context = await getCurrentTabContext(allowedUrls);
+    const context = await getCurrentTabContext();
     if (!context) {
         return;
     }
-    const { domain, tab } = context;
-    if (previewCss) {
-        toggleCSS(tab, previewCss, false);
+    const { domain } = context;
+
+    if (activeEditingTheme.site !== domain || activeEditingTheme.rules.length === 0) {
+        const storedTheme = await getThemeForSite(domain);
+
+        activeEditingTheme = storedTheme ?? {
+            name: "Active Editing Theme",
+            site: domain,
+            author: "Author Name",
+            description: "Theme currently being edited",
+            version: "0.1",
+            rules: []
+        };
     }
-    previewCss = themeToCss(draftTheme);
-    toggleCSS(tab, previewCss, true);
+
+    const existingRule = activeEditingTheme.rules.find((rule) => rule.selector === selector);
+    if (!existingRule) {
+        activeEditingTheme.rules.push({
+            selector,
+            properties: {}
+        });
+    }
+    console.log("current rules:", JSON.stringify(activeEditingTheme.rules, null, 2));
     console.log("Received chosen element selector in background script:", selector);
 }
 
@@ -144,18 +181,3 @@ async function handleInstallTheme() {
     appliedUrls.push(domain);
 }
 
-async function handleSaveDraftTheme() {
-    let context = await getCurrentTabContext();
-    if (!context) {
-        console.error("No allowed tab context found for saving draft theme");
-        return;
-    }
-    const { domain } = context;
-    draftTheme.site = domain;
-    await upsertThemeForSite(draftTheme);
-    savedCss = themeToCss(draftTheme);
-    markDomainAsApplied(domain, appliedUrls);
-    previewCss = '';
-    console.log("Draft theme saved");
-    return;
-}

@@ -1,16 +1,13 @@
 import {
-    applyThemeToTab,
     reapplyThemeIfEnabled,
     replaceThemeCssInTab,
     toggleThemeForTab
 } from "./theme-application";
-import { selectThemeRule, updateSelectedThemeStyle } from "./theme-editor";
+import { selectThemeRule, setActiveEditingTheme, updateSelectedThemeStyle } from "./theme-editor";
 import { loadExampleTheme } from "./theme-loader";
 import { initializeStorage, upsertThemeForSite } from "./theme-storage";
 import { getCurrentTab, getCurrentTabContext } from "./utils";
 import type { ExtensionMessage } from "../shared/messages";
-
-const allowedDomains = ["moodle.informatik.tu-darmstadt.de"];
 
 initializeStorage();
 
@@ -28,6 +25,10 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
 
 async function handleMessage(message: ExtensionMessage) {
     switch (message.type) {
+        case "open_editor":
+            await handleOpenEditor();
+            return;
+
         case "toggle_theme":
             await handleToggleTheme();
             return;
@@ -54,8 +55,17 @@ async function handleMessage(message: ExtensionMessage) {
     }
 }
 
+async function handleOpenEditor() {
+    const tab = await getCurrentTab();
+    if (!tab?.id) {
+        return;
+    }
+
+    chrome.tabs.sendMessage(tab.id, { type: "open_editor" });
+}
+
 async function handleToggleTheme() {
-    const context = await getCurrentTabContext(allowedDomains);
+    const context = await getCurrentTabContext();
     if (!context) {
         return;
     }
@@ -82,6 +92,10 @@ async function handleChosenElement(message: Extract<ExtensionMessage, { type: "c
 }
 
 async function handleUpdateSelectedStyle(message: Extract<ExtensionMessage, { type: "update_selected_style" }>) {
+    if (!message.property || !message.value) {
+        return;
+    }
+
     const context = await getCurrentTabContext();
     if (!context) {
         return;
@@ -96,7 +110,7 @@ async function handleUpdateSelectedStyle(message: Extract<ExtensionMessage, { ty
 }
 
 async function handleInstallTheme() {
-    const context = await getCurrentTabContext(allowedDomains);
+    const context = await getCurrentTabContext();
     if (!context) {
         return;
     }
@@ -105,6 +119,6 @@ async function handleInstallTheme() {
     theme.site = context.domain;
 
     await upsertThemeForSite(theme);
-    await applyThemeToTab(context.tab, context.domain, theme);
+    setActiveEditingTheme(theme);
+    await replaceThemeCssInTab(context.tab, context.domain, theme);
 }
-

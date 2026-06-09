@@ -18,6 +18,10 @@ export async function selectThemeRule(domain: string, selector: string) {
     console.log("Current rules:", JSON.stringify(activeEditingTheme.rules, null, 2));
 }
 
+export function setActiveEditingTheme(theme: Theme) {
+    activeEditingTheme = theme;
+}
+
 export async function updateSelectedThemeStyle(domain: string, property: string, value: string): Promise<Theme | null> {
     if (!selectedSelector) {
         console.error("No selected element to update");
@@ -56,4 +60,3 @@ function ensureRuleExists(selector: string): ThemeRule {
 
     return rule;
 }
-

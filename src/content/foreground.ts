@@ -1,4 +1,5 @@
 let selectionMode = false;
+let editorPanel: HTMLDivElement | null = null;
 
 const hoverOverlay = document.createElement("div");
 hoverOverlay.style.position = "fixed";
@@ -11,14 +12,104 @@ hoverOverlay.style.boxSizing = "border-box";
 document.body.appendChild(hoverOverlay);
 
 chrome.runtime.onMessage.addListener((message, sender) => { 
-    if (message.type === "select_element" && !selectionMode) {
+    if (message.type === "open_editor") {
+        toggleEditorPanel();
+    }
+    else if (message.type === "select_element" && !selectionMode) {
         console.log("Received select_element message in foreground script");
         selectionMode = true;
     }
     else if (message.type === "select_element" && selectionMode) {
         console.log("Exiting selection mode");
         selectionMode = false;
-    }});
+    }}); 
+
+function toggleEditorPanel() {
+    if (editorPanel) {
+        editorPanel.remove();
+        editorPanel = null;
+        return;
+    }
+
+    editorPanel = document.createElement("div");
+    editorPanel.style.position = "fixed";
+    editorPanel.style.top = "1rem";
+    editorPanel.style.right = "1rem";
+    editorPanel.style.zIndex = "10000";
+    editorPanel.style.background = "#222";
+    editorPanel.style.color = "white";
+    editorPanel.style.padding = "0.75rem";
+    editorPanel.style.border = "1px solid #555";
+    editorPanel.style.display = "grid";
+    editorPanel.style.gap = "0.5rem";
+    editorPanel.style.fontFamily = "system-ui, sans-serif";
+
+    editorPanel.innerHTML = `
+        <strong>Theme editor</strong>
+        <button id="mts_select_element">Select element</button>
+        <select id="mts_property">
+            <option value="">Choose property</option>
+            <option value="background-color">Background color</option>
+            <option value="color">Text color</option>
+            <option value="font-family">Font family</option>
+        </select>
+        <input id="mts_color" type="color" value="#ff0000">
+        <select id="mts_font" hidden>
+            <option value="">Choose font</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="system-ui, sans-serif">System UI</option>
+        </select>
+    `;
+
+    document.body.appendChild(editorPanel);
+
+    const selectButton = editorPanel.querySelector("#mts_select_element") as HTMLButtonElement;
+    const propertyInput = editorPanel.querySelector("#mts_property") as HTMLSelectElement;
+    const colorInput = editorPanel.querySelector("#mts_color") as HTMLInputElement;
+    const fontInput = editorPanel.querySelector("#mts_font") as HTMLSelectElement;
+
+    function selectedValue() {
+        return propertyInput.value === "font-family" ? fontInput.value : colorInput.value;
+    }
+
+    function sendStyleUpdate() {
+        if (!propertyInput.value || !selectedValue()) {
+            return;
+        }
+
+        chrome.runtime.sendMessage({
+            type: "update_selected_style",
+            property: propertyInput.value,
+            value: selectedValue()
+        });
+    }
+
+    function resetEditorInputs() {
+        propertyInput.value = "";
+        colorInput.value = "#ff0000";
+        fontInput.value = "";
+        colorInput.hidden = false;
+        fontInput.hidden = true;
+    }
+
+    selectButton.addEventListener("click", () => {
+        resetEditorInputs();
+        selectionMode = true;
+    });
+
+    propertyInput.addEventListener("change", () => {
+        const isFont = propertyInput.value === "font-family";
+        colorInput.hidden = isFont;
+        fontInput.hidden = !isFont;
+        sendStyleUpdate();
+    });
+
+    colorInput.addEventListener("input", sendStyleUpdate);
+    fontInput.addEventListener("change", sendStyleUpdate);
+}
 
 function mouseoverElement(event: MouseEvent) {
     if (!selectionMode) {

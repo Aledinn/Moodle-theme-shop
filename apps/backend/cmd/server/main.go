@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type theme struct {
@@ -18,6 +19,7 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/health", handleHealth)
 	router.HandleFunc("/themes", handleThemes)
+	router.HandleFunc("/themes/", handleThemeById)
 	fmt.Println("listening on :8080")
 	err := http.ListenAndServe(":8080", router)
 	if err != nil {
@@ -42,4 +44,20 @@ func handleThemes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(themes)
+}
+
+func handleThemeById(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	myTheme := theme{
+		Id:     1,
+		Name:   "Example Theme",
+		Author: "John Doe",
+		Site:   "moodle.com",
+	}
+	myId := strings.TrimPrefix(r.URL.Path, "/themes/")
+	if myId == "1" {
+		json.NewEncoder(w).Encode(myTheme)
+	} else {
+		http.NotFound(w, r)
+	}
 }

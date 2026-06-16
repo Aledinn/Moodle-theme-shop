@@ -15,6 +15,15 @@ type theme struct {
 	Site   string `json:"site"`
 }
 
+var themes = []theme{
+	{
+		Id:     1,
+		Name:   "Example Theme",
+		Author: "John Doe",
+		Site:   "moodle.com",
+	},
+}
+
 func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/health", handleHealth)
@@ -34,29 +43,14 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 
 func handleThemes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	themes := []theme{
-		{
-			Id:     1,
-			Name:   "Example Theme",
-			Author: "John Doe",
-			Site:   "moodle.com",
-		},
-	}
-
 	json.NewEncoder(w).Encode(themes)
 }
 
 func handleThemeById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	myTheme := theme{
-		Id:     1,
-		Name:   "Example Theme",
-		Author: "John Doe",
-		Site:   "moodle.com",
-	}
 	myId := strings.TrimPrefix(r.URL.Path, "/themes/")
 	if myId == "1" {
-		json.NewEncoder(w).Encode(myTheme)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(themes[0])
 	} else {
 		http.NotFound(w, r)
 	}

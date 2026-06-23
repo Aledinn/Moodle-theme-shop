@@ -48,10 +48,12 @@ func handleThemes(w http.ResponseWriter, r *http.Request) {
 
 func handleThemeById(w http.ResponseWriter, r *http.Request) {
 	myId := strings.TrimPrefix(r.URL.Path, "/themes/")
-	if myId == "1" {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(themes[0])
-	} else {
-		http.NotFound(w, r)
+	for _, theme := range themes {
+		if fmt.Sprint(theme.Id) == myId {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(theme)
+			return
+		}
 	}
+	http.NotFound(w, r)
 }

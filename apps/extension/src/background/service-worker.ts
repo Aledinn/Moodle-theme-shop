@@ -4,7 +4,7 @@ import {
     toggleThemeForTab
 } from "./theme-application";
 import { selectThemeRule, setActiveEditingTheme, updateSelectedThemeStyle } from "./theme-editor";
-import { loadExampleTheme } from "./theme-loader";
+import { loadThemeFromBackend } from "./theme-loader";
 import { initializeStorage, upsertThemeForSite } from "./theme-storage";
 import { getCurrentTab, getCurrentTabContext } from "./utils";
 import type { ExtensionMessage } from "../shared/messages";
@@ -115,7 +115,7 @@ async function handleInstallTheme() {
         return;
     }
 
-    const theme = await loadExampleTheme();
+    const theme = await loadThemeFromBackend(1);
     theme.site = context.domain;
 
     await upsertThemeForSite(theme);

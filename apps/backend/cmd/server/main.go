@@ -41,7 +41,7 @@ var themes = []theme{
 			{
 				Selector: "body",
 				Properties: map[string]string{
-					"background-color": "red",
+					"background-color": "yellow",
 					"color":            "blue",
 				},
 			},
@@ -70,6 +70,7 @@ var themes = []theme{
 
 func main() {
 	router := http.NewServeMux()
+	router.HandleFunc("/", onlyGet(handleRoot))
 	router.HandleFunc("/health", onlyGet(handleHealth))
 	router.HandleFunc("/themes", onlyGet(handleThemes))
 	router.HandleFunc("/themes/", onlyGet(handleThemeById))
@@ -78,6 +79,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func handleRoot(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, map[string]string{"message": "Moodle Theme Shop API"})
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {

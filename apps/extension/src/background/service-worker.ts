@@ -5,7 +5,7 @@ import {
 } from "./theme-application";
 import { selectThemeRule, setActiveEditingTheme, updateSelectedThemeStyle } from "./theme-editor";
 import { loadThemeFromBackend } from "./theme-loader";
-import { initializeStorage, upsertThemeForSite } from "./theme-storage";
+import { initializeStorage, upsertThemeForSite, getThemeForSite } from "./theme-storage";
 import { getCurrentTab, getCurrentTabContext } from "./utils";
 import type { ExtensionMessage } from "../shared/messages";
 
@@ -48,6 +48,10 @@ async function handleMessage(message: ExtensionMessage) {
         case "install_theme":
             await handleInstallTheme(message.id);
             return;
+
+        case "export_json":
+            await exportThemeToJson();
+            return
 
         default:
             console.warn("Unknown message:", message);
@@ -121,4 +125,19 @@ async function handleInstallTheme(id:number) {
     await upsertThemeForSite(theme);
     setActiveEditingTheme(theme);
     await replaceThemeCssInTab(context.tab, context.domain, theme);
+}
+
+async function exportThemeToJson(){
+    const context = await getCurrentTabContext();
+    if (!context) {
+        return;
+    }
+    const theme = await getThemeForSite(context.domain);
+    const json = JSON.stringify(theme,null,2);
+    const dataUrl = "data:application/json;charset=utf-8," + encodeURIComponent(json);
+
+    chrome.downloads.download({
+        url : dataUrl,
+        filename: `${context.domain}-theme.json`
+    });
 }

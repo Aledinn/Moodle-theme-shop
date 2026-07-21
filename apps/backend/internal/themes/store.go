@@ -14,8 +14,7 @@ var themes = []theme{
 			{
 				Selector: "body",
 				Properties: map[string]string{
-					"background-color": "yellow",
-					"color":            "blue",
+					"color": "blue",
 				},
 			},
 		},

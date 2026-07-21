@@ -46,7 +46,7 @@ async function handleMessage(message: ExtensionMessage) {
             return;
 
         case "install_theme":
-            await handleInstallTheme();
+            await handleInstallTheme(message.id);
             return;
 
         default:
@@ -109,13 +109,13 @@ async function handleUpdateSelectedStyle(message: Extract<ExtensionMessage, { ty
     await replaceThemeCssInTab(context.tab, context.domain, updatedTheme);
 }
 
-async function handleInstallTheme() {
+async function handleInstallTheme(id:number) {
     const context = await getCurrentTabContext();
     if (!context) {
         return;
     }
 
-    const theme = await loadThemeFromBackend(1);
+    const theme = await loadThemeFromBackend(id);
     theme.site = context.domain;
 
     await upsertThemeForSite(theme);

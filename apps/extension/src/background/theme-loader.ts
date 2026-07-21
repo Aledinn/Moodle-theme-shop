@@ -1,8 +1,8 @@
 import type { Theme } from "./theme-storage";
-const API_BASE_URL = "http://localhost:8080"
+import { API_BASE_URL } from "../shared/config";
 
 export async function loadThemeFromBackend(themeId: number): Promise<Theme> {
-    const themeUrl = '${API_BASE_URL}/${themeId}';
+    const themeUrl = `${API_BASE_URL}/themes/${themeId}`;
 
     const response = await fetch(themeUrl);
 

@@ -11,5 +11,5 @@ buttonToggleTheme.addEventListener("click", () => {
 });
 
 buttonInstallTheme.addEventListener("click", () => {
-    chrome.runtime.sendMessage({ type: "install_theme" });
+    window.location.href = chrome.runtime.getURL("shop/shop.html");
 });

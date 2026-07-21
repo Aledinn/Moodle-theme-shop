@@ -8,6 +8,7 @@ import { loadThemeFromBackend } from "./theme-loader";
 import { initializeStorage, upsertThemeForSite, getThemeForSite } from "./theme-storage";
 import { getCurrentTab, getCurrentTabContext } from "./utils";
 import type { ExtensionMessage } from "../shared/messages";
+import {API_BASE_URL} from "../shared/config"
 
 initializeStorage();
 
@@ -51,6 +52,10 @@ async function handleMessage(message: ExtensionMessage) {
 
         case "export_json":
             await exportThemeToJson();
+            return
+
+        case "upload_theme":
+            await uploadThemeToShop();
             return
 
         default:
@@ -139,5 +144,19 @@ async function exportThemeToJson(){
     chrome.downloads.download({
         url : dataUrl,
         filename: `${context.domain}-theme.json`
+    });
+}
+
+async function uploadThemeToShop(){
+    const context = await getCurrentTabContext();
+    if (!context) return;
+
+    const theme = await getThemeForSite(context.domain);
+    if (!theme) return;
+
+    await fetch(`${API_BASE_URL}/themes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(theme)
     });
 }

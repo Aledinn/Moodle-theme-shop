@@ -12,8 +12,8 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/", onlyGet(themes.HandleRoot))
 	router.HandleFunc("/health", onlyGet(themes.HandleHealth))
-	router.HandleFunc("/themes", onlyGet(themes.HandleThemes))
-	router.HandleFunc("/themes/", onlyGet(themes.HandleThemeByID))
+	router.HandleFunc("/themes", themes.HandleThemes)
+	router.HandleFunc("/themes/", themes.HandleThemeByID)
 
 	fmt.Println("listening on :8080")
 

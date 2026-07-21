@@ -5,5 +5,6 @@ export type ExtensionMessage =
     | { type: "chosen_element"; selector: string }
     | { type: "update_selected_style"; property: string; value: string }
     | { type: "install_theme"; id: number}
-    | { type: "export_json"};
+    | { type: "export_json"}
+    | { type: "upload_theme"};
 

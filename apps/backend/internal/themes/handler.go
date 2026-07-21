@@ -16,6 +16,16 @@ func HandleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleThemes(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		getThemes(w, r)
+	} else if r.Method == http.MethodPost {
+		postTheme(w, r)
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func getThemes(w http.ResponseWriter, r *http.Request) {
 	summaries := []themeSummary{}
 	for _, theme := range themes {
 		summaries = append(summaries, theme.themeSummary)
@@ -32,6 +42,17 @@ func HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	http.NotFound(w, r)
+}
+
+func postTheme(w http.ResponseWriter, r *http.Request) {
+	var t theme
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		http.Error(w, "invalid body", http.StatusBadRequest)
+		return
+	}
+	t.Id = len(themes) + 1
+	themes = append(themes, t)
+	writeJSON(w, t)
 }
 
 func writeJSON(w http.ResponseWriter, data any) {

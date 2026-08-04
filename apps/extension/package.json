@@ -8,17 +8,9 @@
     "typecheck": "tsc --noEmit",
     "build": "vite build"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AleddineAbsi/Moodle-theme-shop.git"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/AleddineAbsi/Moodle-theme-shop/issues"
-  },
-  "homepage": "https://github.com/AleddineAbsi/Moodle-theme-shop#readme",
   "devDependencies": {
     "@types/chrome": "^0.1.42",
     "typescript": "^6.0.3",

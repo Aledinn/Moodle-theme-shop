@@ -1,10 +1,14 @@
 package themes
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/lib/pq"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func HandleRoot(w http.ResponseWriter, r *http.Request) {
@@ -50,8 +54,19 @@ func postTheme(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid body", http.StatusBadRequest)
 		return
 	}
-	t.Id = len(themes) + 1
-	themes = append(themes, t)
+
+	db := databasehandler()
+	defer db.Close()
+
+	fakeVersion := "5.0"
+	_, err := db.Exec("INSERT INTO themes (name,site,author,description,version) VALUES ($1,$2,$3,$4,$5)", t.Name, t.Site, t.Author, t.Description, fakeVersion)
+	if err != nil {
+		log.Printf("inserting theme: %v", err)
+		http.Error(w, "failed to upload theme", http.StatusInternalServerError)
+	}
+	print("inserted ?")
+	//t.Id = len(themes) + 1
+	//themes = append(themes, t)
 	writeJSON(w, t)
 }
 
@@ -59,4 +74,32 @@ func writeJSON(w http.ResponseWriter, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(data)
+}
+
+func databasehandler() *sql.DB {
+	cfg := pq.Config{
+		Host:           "localhost",
+		Port:           5432,
+		Database:       "themeshop",
+		User:           "test",
+		Password:       "test",
+		ConnectTimeout: 5 * time.Second,
+		SSLMode:        pq.SSLMode("disable"),
+	}
+
+	c, err := pq.NewConnectorConfig(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db := sql.OpenDB(c)
+
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+		db.Close()
+	}
+	print("success")
+
+	return db
 }

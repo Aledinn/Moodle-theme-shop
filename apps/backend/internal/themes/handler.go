@@ -57,16 +57,14 @@ func postTheme(w http.ResponseWriter, r *http.Request) {
 
 	db := databasehandler()
 	defer db.Close()
-
-	fakeVersion := "5.0"
-	_, err := db.Exec("INSERT INTO themes (name,site,author,description,version) VALUES ($1,$2,$3,$4,$5)", t.Name, t.Site, t.Author, t.Description, fakeVersion)
+	temporaryVersion := "1.0"
+	sqlQuery := "INSERT INTO themes (name,site,author,description,version,rules) VALUES ($1,$2,$3,$4,$5,$6::jsonb)"
+	
+	_,err := db.Exec(sqlQuery,t.Name, t.Site, t.Author, t.Description,temporaryVersion,t.Rules)
 	if err != nil {
 		log.Printf("inserting theme: %v", err)
-		http.Error(w, "failed to upload theme", http.StatusInternalServerError)
 	}
-	print("inserted ?")
-	//t.Id = len(themes) + 1
-	//themes = append(themes, t)
+
 	writeJSON(w, t)
 }
 

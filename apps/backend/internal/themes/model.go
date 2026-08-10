@@ -1,8 +1,9 @@
 package themes
+import "encoding/json"
 
 type theme struct {
 	themeSummary
-	Rules []themeRule `json:"rules"`
+	Rules json.RawMessage `json:"rules"`
 }
 
 type themeSummary struct {
@@ -12,9 +13,4 @@ type themeSummary struct {
 	Author      string `json:"author"`
 	Description string `json:"description"`
 	Version     string `json:"version"`
-}
-
-type themeRule struct {
-	Selector   string            `json:"selector"`
-	Properties map[string]string `json:"properties"`
 }

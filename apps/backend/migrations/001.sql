@@ -5,5 +5,6 @@ CREATE TABLE themes (
     author TEXT NOT NULL,
     description TEXT NOT NULL,
     version TEXT NOT NULL,
-    rules JSONB NOT NULL DEFAULT '[]'
+    rules JSONB NOT NULL DEFAULT '[]'::jsonb
 );
+

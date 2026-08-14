@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"os"
 )
 
 func HandleRoot(w http.ResponseWriter, r *http.Request) {
@@ -31,21 +32,49 @@ func HandleThemes(w http.ResponseWriter, r *http.Request) {
 
 func getThemes(w http.ResponseWriter, r *http.Request) {
 	summaries := []themeSummary{}
-	for _, theme := range themes {
-		summaries = append(summaries, theme.themeSummary)
+
+	//need to add a limit
+	myQuery := "SELECT id,name,site,author,description,version FROM themes"
+	db := databasehandler()
+	rows,err := db.Query(myQuery)
+	if err != nil {
+		log.Printf("error: %v", err)
 	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var summary themeSummary
+		if err := rows.Scan(&summary.Id,&summary.Name,&summary.Site,&summary.Author,&summary.Description,&summary.Version); err != nil {
+			log.Printf("error: %v", err)
+		}
+		fmt.Println(summary)
+		summaries = append(summaries,summary)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("error: %v", err)
+	}
+	fmt.Println(summaries)
 	writeJSON(w, summaries)
 }
 
 func HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 	myId := strings.TrimPrefix(r.URL.Path, "/themes/")
-	for _, theme := range themes {
-		if fmt.Sprint(theme.Id) == myId {
-			writeJSON(w, theme)
-			return
+
+	var t theme 
+	db := databasehandler()
+	
+	sqlQuery:= "SELECT * FROM themes WHERE id = $1"
+
+	row := db.QueryRow(sqlQuery,myId)
+	if err := row.Scan(&t.themeSummary.Id,&t.themeSummary.Name,&t.themeSummary.Site,&t.themeSummary.Author,&t.themeSummary.Description,&t.themeSummary.Version,&t.Rules); err != nil {
+		if err ==  sql.ErrNoRows {
+			http.NotFound(w, r)
 		}
+		http.NotFound(w, r)
 	}
-	http.NotFound(w, r)
+	writeJSON(w,t)
 }
 
 func postTheme(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +126,6 @@ func databasehandler() *sql.DB {
 		log.Fatal(err)
 		db.Close()
 	}
-	print("success")
 
 	return db
 }

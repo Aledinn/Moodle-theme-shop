@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	"os"
 )
 
 func HandleRoot(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,7 @@ export type ExtensionMessage =
     | { type: "select_element" }
     | { type: "chosen_element"; selector: string }
     | { type: "update_selected_style"; property: string; value: string }
-    | { type: "install_theme"; id: number}
+    | { type: "install_theme"; id: string}
     | { type: "export_json"}
     | { type: "upload_theme"};
 

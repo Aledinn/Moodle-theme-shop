@@ -118,7 +118,7 @@ async function handleUpdateSelectedStyle(message: Extract<ExtensionMessage, { ty
     await replaceThemeCssInTab(context.tab, context.domain, updatedTheme);
 }
 
-async function handleInstallTheme(id:number) {
+async function handleInstallTheme(id:string) {
     const context = await getCurrentTabContext();
     if (!context) {
         return;

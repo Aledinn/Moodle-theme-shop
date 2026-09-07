@@ -7,7 +7,7 @@ type theme struct {
 }
 
 type themeSummary struct {
-	Id          int    `json:"id"`
+	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Site        string `json:"site"`
 	Author      string `json:"author"`

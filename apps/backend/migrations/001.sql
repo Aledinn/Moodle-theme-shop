@@ -1,4 +1,8 @@
-CREATE TABLE themes (
+CREATE DATABASE IF NOT EXISTS mydb;
+
+USE mydb;
+
+CREATE TABLE IF NOT EXISTS themes (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     site TEXT NOT NULL,

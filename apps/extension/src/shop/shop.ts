@@ -3,7 +3,7 @@ const list = document.getElementById("theme-list");
 
 if (list){
     interface Theme{
-        id: number;
+        id: string;
         name: string;
         author: string;
         description: string;

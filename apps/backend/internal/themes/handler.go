@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"os"
+	"github.com/cenkalti/backoff/v4"
 )
 
 func HandleRoot(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +36,10 @@ func getThemes(w http.ResponseWriter, r *http.Request) {
 
 	//need to add a limit
 	myQuery := "SELECT id,name,site,author,description,version FROM themes"
-	db := databasehandler()
+	db, err := roachDb()
+	if err != nil {
+		log.Fatalf("failed to initialize the store: %s", err)
+	}
 	rows,err := db.Query(myQuery)
 	if err != nil {
 		log.Printf("error: %v", err)
@@ -51,7 +56,7 @@ func getThemes(w http.ResponseWriter, r *http.Request) {
 		summaries = append(summaries,summary)
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		log.Printf("error: %v", err)
 	}
 	fmt.Println(summaries)
@@ -62,12 +67,15 @@ func HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 	myId := strings.TrimPrefix(r.URL.Path, "/themes/")
 
 	var t theme 
-	db := databasehandler()
-	
+	db, err := roachDb()
+	if err != nil {
+		log.Fatalf("failed to initialize the store: %s", err)
+	}
+
 	sqlQuery:= "SELECT * FROM themes WHERE id = $1"
 
 	row := db.QueryRow(sqlQuery,myId)
-	if err := row.Scan(&t.themeSummary.Id,&t.themeSummary.Name,&t.themeSummary.Site,&t.themeSummary.Author,&t.themeSummary.Description,&t.themeSummary.Version,&t.Rules); err != nil {
+	if err = row.Scan(&t.themeSummary.Id,&t.themeSummary.Name,&t.themeSummary.Site,&t.themeSummary.Author,&t.themeSummary.Description,&t.themeSummary.Version,&t.Rules); err != nil {
 		if err ==  sql.ErrNoRows {
 			http.NotFound(w, r)
 		}
@@ -83,12 +91,16 @@ func postTheme(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := databasehandler()
+	db, err := roachDb()
+	if err != nil {
+		log.Fatalf("failed to initialize the store: %s", err)
+	}
+
 	defer db.Close()
 	temporaryVersion := "1.0"
 	sqlQuery := "INSERT INTO themes (name,site,author,description,version,rules) VALUES ($1,$2,$3,$4,$5,$6::jsonb)"
 	
-	_,err := db.Exec(sqlQuery,t.Name, t.Site, t.Author, t.Description,temporaryVersion,t.Rules)
+	_,err = db.Exec(sqlQuery,t.Name, t.Site, t.Author, t.Description,temporaryVersion,t.Rules)
 	if err != nil {
 		log.Printf("inserting theme: %v", err)
 	}
@@ -127,4 +139,20 @@ func databasehandler() *sql.DB {
 	}
 
 	return db
+}
+
+func roachDb() (*sql.DB, error) {
+	pgConnString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s sslmode=disable",
+		os.Getenv("PGHOST"), os.Getenv("PGPORT"), os.Getenv("PGDATABASE"), os.Getenv("PGUSER"))
+	if password := os.Getenv("PGPASSWORD"); password != "" {
+		pgConnString += fmt.Sprintf(" password=%s", password)
+	}
+	var db *sql.DB
+	var err error
+	openDB := func() error {
+		db, err = sql.Open("postgres", pgConnString)
+		return err
+	}
+	err = backoff.Retry(openDB, backoff.NewExponentialBackOff())
+	return db, nil
 }

@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/lib/pq"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
-	"os"
+
 	"github.com/cenkalti/backoff/v4"
+	"github.com/lib/pq"
 )
 
 func HandleRoot(w http.ResponseWriter, r *http.Request) {
@@ -38,50 +39,63 @@ func getThemes(w http.ResponseWriter, r *http.Request) {
 	myQuery := "SELECT id,name,site,author,description,version FROM themes"
 	db, err := roachDb()
 	if err != nil {
-		log.Fatalf("failed to initialize the store: %s", err)
+		log.Printf("failed to initialize the store: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
 	}
-	rows,err := db.Query(myQuery)
-	if err != nil {
-		log.Printf("error: %v", err)
-	}
+	defer db.Close()
 
+	rows, err := db.Query(myQuery)
+	if err != nil {
+		log.Printf("query themes: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var summary themeSummary
-		if err := rows.Scan(&summary.Id,&summary.Name,&summary.Site,&summary.Author,&summary.Description,&summary.Version); err != nil {
-			log.Printf("error: %v", err)
+		if err := rows.Scan(&summary.Id, &summary.Name, &summary.Site, &summary.Author, &summary.Description, &summary.Version); err != nil {
+			log.Printf("scan theme summary: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
 		}
-		fmt.Println(summary)
-		summaries = append(summaries,summary)
+		summaries = append(summaries, summary)
 	}
 
 	if err = rows.Err(); err != nil {
-		log.Printf("error: %v", err)
+		log.Printf("iterate theme summaries: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
 	}
-	fmt.Println(summaries)
 	writeJSON(w, summaries)
 }
 
 func HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 	myId := strings.TrimPrefix(r.URL.Path, "/themes/")
 
-	var t theme 
+	var t theme
 	db, err := roachDb()
 	if err != nil {
-		log.Fatalf("failed to initialize the store: %s", err)
+		log.Printf("failed to initialize the store: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
 	}
+	defer db.Close()
 
-	sqlQuery:= "SELECT * FROM themes WHERE id = $1"
+	sqlQuery := "SELECT * FROM themes WHERE id = $1"
 
-	row := db.QueryRow(sqlQuery,myId)
-	if err = row.Scan(&t.themeSummary.Id,&t.themeSummary.Name,&t.themeSummary.Site,&t.themeSummary.Author,&t.themeSummary.Description,&t.themeSummary.Version,&t.Rules); err != nil {
-		if err ==  sql.ErrNoRows {
+	row := db.QueryRow(sqlQuery, myId)
+	if err = row.Scan(&t.themeSummary.Id, &t.themeSummary.Name, &t.themeSummary.Site, &t.themeSummary.Author, &t.themeSummary.Description, &t.themeSummary.Version, &t.Rules); err != nil {
+		if err == sql.ErrNoRows {
 			http.NotFound(w, r)
+			return
 		}
-		http.NotFound(w, r)
+		log.Printf("query theme by Id: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
 	}
-	writeJSON(w,t)
+	writeJSON(w, t)
 }
 
 func postTheme(w http.ResponseWriter, r *http.Request) {
@@ -93,16 +107,20 @@ func postTheme(w http.ResponseWriter, r *http.Request) {
 
 	db, err := roachDb()
 	if err != nil {
-		log.Fatalf("failed to initialize the store: %s", err)
+		log.Printf("failed to initialize the store: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
 	}
-
 	defer db.Close()
+
 	temporaryVersion := "1.0"
 	sqlQuery := "INSERT INTO themes (name,site,author,description,version,rules) VALUES ($1,$2,$3,$4,$5,$6::jsonb)"
-	
-	_,err = db.Exec(sqlQuery,t.Name, t.Site, t.Author, t.Description,temporaryVersion,t.Rules)
+
+	_, err = db.Exec(sqlQuery, t.Name, t.Site, t.Author, t.Description, temporaryVersion, t.Rules)
 	if err != nil {
 		log.Printf("inserting theme: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
 	}
 
 	writeJSON(w, t)
@@ -114,6 +132,7 @@ func writeJSON(w http.ResponseWriter, data any) {
 	json.NewEncoder(w).Encode(data)
 }
 
+// legacy code for Postgresql
 func databasehandler() *sql.DB {
 	cfg := pq.Config{
 		Host:           "localhost",

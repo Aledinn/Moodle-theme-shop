@@ -1,5 +1,3 @@
 package themes
 
-var themes = []theme{
-
-}
+var themes = []theme{}

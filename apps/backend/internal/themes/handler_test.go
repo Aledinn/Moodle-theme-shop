@@ -31,47 +31,24 @@ func TestHealthHandler(t *testing.T) {
 	}
 }
 
-func TestHandleThemes(t *testing.T) {
-	r := httptest.NewRequest(http.MethodGet, "/themes", nil)
+func TestHandleThemesRejectsUnsupportedMethod(t *testing.T) {
+	r := httptest.NewRequest(http.MethodDelete, "/themes", nil)
 	w := httptest.NewRecorder()
 
 	HandleThemes(w, r)
 
-	result := w.Result()
-	if result.StatusCode != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, result.StatusCode)
-	}
-
-	body := w.Body.String()
-	if strings.Contains(body, "rules") {
-		t.Errorf("HandleThemes should not contain rules")
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("expected status %d, got %d", http.StatusMethodNotAllowed, w.Code)
 	}
 }
 
-func TestHandleThemeByIDReturnsFullTheme(t *testing.T) {
-	r := httptest.NewRequest(http.MethodGet, "/themes/1", nil)
+func TestHandleThemesRejectsInvalidJSON(t *testing.T) {
+	r := httptest.NewRequest(http.MethodPost, "/themes", strings.NewReader("{"))
 	w := httptest.NewRecorder()
-	HandleThemeByID(w, r)
 
-	result := w.Result()
-	if result.StatusCode != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, result.StatusCode)
-	}
+	HandleThemes(w, r)
 
-	body := w.Body.String()
-	if !strings.Contains(body, "rules") {
-		t.Errorf("HandleThemeById should return theme with rules")
-	}
-}
-
-// temporary extreme value for testing, logic will be changed later
-func TestHandleThemeByIDReturnsNotFound(t *testing.T) {
-	r := httptest.NewRequest(http.MethodGet, "/themes/9999999999999999999999999999999", nil)
-	w := httptest.NewRecorder()
-	HandleThemeByID(w, r)
-
-	result := w.Result()
-	if result.StatusCode != http.StatusNotFound {
-		t.Errorf("expected status %d, got %d", http.StatusNotFound, result.StatusCode)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 	}
 }

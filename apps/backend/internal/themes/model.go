@@ -1,12 +1,13 @@
 package themes
+
 import "encoding/json"
 
-type theme struct {
-	themeSummary
+type Theme struct {
+	ThemeSummary
 	Rules json.RawMessage `json:"rules"`
 }
 
-type themeSummary struct {
+type ThemeSummary struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Site        string `json:"site"`

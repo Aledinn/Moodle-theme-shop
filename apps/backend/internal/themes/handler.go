@@ -14,6 +14,14 @@ import (
 	"github.com/lib/pq"
 )
 
+type Handler struct {
+	store ThemeStore
+}
+
+func NewHandler(store ThemeStore) *Handler {
+	return &Handler{store: store}
+}
+
 func HandleRoot(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]string{"message": "Moodle Theme Shop API"})
 }
@@ -33,10 +41,10 @@ func HandleThemes(w http.ResponseWriter, r *http.Request) {
 }
 
 func getThemes(w http.ResponseWriter, r *http.Request) {
-	summaries := []themeSummary{}
+	summaries := []ThemeSummary{}
 
 	//need to add a limit
-	myQuery := "SELECT id,name,site,author,description,version FROM themes"
+	myQuery := "SELECT id,name,site,author,description,version FROM Themes"
 	db, err := roachDb()
 	if err != nil {
 		log.Printf("failed to initialize the store: %v", err)
@@ -47,16 +55,16 @@ func getThemes(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.Query(myQuery)
 	if err != nil {
-		log.Printf("query themes: %v", err)
+		log.Printf("query Themes: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var summary themeSummary
+		var summary ThemeSummary
 		if err := rows.Scan(&summary.Id, &summary.Name, &summary.Site, &summary.Author, &summary.Description, &summary.Version); err != nil {
-			log.Printf("scan theme summary: %v", err)
+			log.Printf("scan Theme summary: %v", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -64,7 +72,7 @@ func getThemes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = rows.Err(); err != nil {
-		log.Printf("iterate theme summaries: %v", err)
+		log.Printf("iterate Theme summaries: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -72,9 +80,9 @@ func getThemes(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleThemeByID(w http.ResponseWriter, r *http.Request) {
-	myId := strings.TrimPrefix(r.URL.Path, "/themes/")
+	myId := strings.TrimPrefix(r.URL.Path, "/Themes/")
 
-	var t theme
+	var t Theme
 	db, err := roachDb()
 	if err != nil {
 		log.Printf("failed to initialize the store: %v", err)
@@ -83,15 +91,15 @@ func HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	sqlQuery := "SELECT * FROM themes WHERE id = $1"
+	sqlQuery := "SELECT * FROM Themes WHERE id = $1"
 
 	row := db.QueryRow(sqlQuery, myId)
-	if err = row.Scan(&t.themeSummary.Id, &t.themeSummary.Name, &t.themeSummary.Site, &t.themeSummary.Author, &t.themeSummary.Description, &t.themeSummary.Version, &t.Rules); err != nil {
+	if err = row.Scan(&t.ThemeSummary.Id, &t.ThemeSummary.Name, &t.ThemeSummary.Site, &t.ThemeSummary.Author, &t.ThemeSummary.Description, &t.ThemeSummary.Version, &t.Rules); err != nil {
 		if err == sql.ErrNoRows {
 			http.NotFound(w, r)
 			return
 		}
-		log.Printf("query theme by Id: %v", err)
+		log.Printf("query Theme by Id: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -99,7 +107,7 @@ func HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func postTheme(w http.ResponseWriter, r *http.Request) {
-	var t theme
+	var t Theme
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
 		http.Error(w, "invalid body", http.StatusBadRequest)
 		return
@@ -114,11 +122,11 @@ func postTheme(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	temporaryVersion := "1.0"
-	sqlQuery := "INSERT INTO themes (name,site,author,description,version,rules) VALUES ($1,$2,$3,$4,$5,$6::jsonb)"
+	sqlQuery := "INSERT INTO Themes (name,site,author,description,version,rules) VALUES ($1,$2,$3,$4,$5,$6::jsonb)"
 
 	_, err = db.Exec(sqlQuery, t.Name, t.Site, t.Author, t.Description, temporaryVersion, t.Rules)
 	if err != nil {
-		log.Printf("inserting theme: %v", err)
+		log.Printf("inserting Theme: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -137,7 +145,7 @@ func databasehandler() *sql.DB {
 	cfg := pq.Config{
 		Host:           "localhost",
 		Port:           5432,
-		Database:       "themeshop",
+		Database:       "Themeshop",
 		User:           "test",
 		Password:       "test",
 		ConnectTimeout: 5 * time.Second,

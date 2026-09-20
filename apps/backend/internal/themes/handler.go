@@ -1,8 +1,10 @@
 package themes
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -30,108 +32,77 @@ func HandleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]string{"status": "ok"})
 }
 
-func HandleThemes(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		getThemes(w, r)
-	} else if r.Method == http.MethodPost {
-		postTheme(w, r)
-	} else {
+func (h *Handler) HandleThemes(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		h.getThemes(w, r)
+	case http.MethodPost:
+		h.postTheme(w, r)
+	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
-func getThemes(w http.ResponseWriter, r *http.Request) {
-	summaries := []ThemeSummary{}
-
-	//need to add a limit
-	myQuery := "SELECT id,name,site,author,description,version FROM Themes"
-	db, err := roachDb()
+func (h *Handler) getThemes(w http.ResponseWriter, r *http.Request) {
+	summaries, err := h.store.List(r.Context())
 	if err != nil {
-		log.Printf("failed to initialize the store: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
-	rows, err := db.Query(myQuery)
-	if err != nil {
-		log.Printf("query Themes: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var summary ThemeSummary
-		if err := rows.Scan(&summary.Id, &summary.Name, &summary.Site, &summary.Author, &summary.Description, &summary.Version); err != nil {
-			log.Printf("scan Theme summary: %v", err)
-			http.Error(w, "internal server error", http.StatusInternalServerError)
-			return
-		}
-		summaries = append(summaries, summary)
-	}
-
-	if err = rows.Err(); err != nil {
-		log.Printf("iterate Theme summaries: %v", err)
+		log.Printf("list themes :%v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 	writeJSON(w, summaries)
 }
 
-func HandleThemeByID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 	myId := strings.TrimPrefix(r.URL.Path, "/Themes/")
+	if myId == "" {
+		http.NotFound(w, r)
+		return
+	}
 
-	var t Theme
-	db, err := roachDb()
+	theme, err := h.store.GetByID(r.Context(), myId)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.NotFound(w, r)
+		return
+	}
 	if err != nil {
-		log.Printf("failed to initialize the store: %v", err)
+		log.Printf("get theme by ID: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	defer db.Close()
 
-	sqlQuery := "SELECT * FROM Themes WHERE id = $1"
-
-	row := db.QueryRow(sqlQuery, myId)
-	if err = row.Scan(&t.ThemeSummary.Id, &t.ThemeSummary.Name, &t.ThemeSummary.Site, &t.ThemeSummary.Author, &t.ThemeSummary.Description, &t.ThemeSummary.Version, &t.Rules); err != nil {
-		if err == sql.ErrNoRows {
-			http.NotFound(w, r)
-			return
-		}
-		log.Printf("query Theme by Id: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-	writeJSON(w, t)
+	writeJSON(w, theme)
 }
 
-func postTheme(w http.ResponseWriter, r *http.Request) {
-	var t Theme
-	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+func (h *Handler) postTheme(w http.ResponseWriter, r *http.Request) {
+	var theme Theme
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&theme); err != nil {
 		http.Error(w, "invalid body", http.StatusBadRequest)
 		return
 	}
 
-	db, err := roachDb()
-	if err != nil {
-		log.Printf("failed to initialize the store: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+	if theme.Name == "" || theme.Site == "" || theme.Author == "" {
+		http.Error(w, "name, site and author are required", http.StatusBadRequest)
 		return
 	}
-	defer db.Close()
 
-	temporaryVersion := "1.0"
-	sqlQuery := "INSERT INTO Themes (name,site,author,description,version,rules) VALUES ($1,$2,$3,$4,$5,$6::jsonb)"
+	if theme.Version == "" {
+		theme.Version = "1.0"
+	}
 
-	_, err = db.Exec(sqlQuery, t.Name, t.Site, t.Author, t.Description, temporaryVersion, t.Rules)
+	created, err := h.store.Create(r.Context(), theme)
+
 	if err != nil {
 		log.Printf("inserting Theme: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	writeJSON(w, t)
+	writeJSON(w, created)
 }
 
 func writeJSON(w http.ResponseWriter, data any) {
@@ -168,7 +139,7 @@ func databasehandler() *sql.DB {
 	return db
 }
 
-func roachDb() (*sql.DB, error) {
+func RoachDb(ctx context.Context) (*sql.DB, error) {
 	pgConnString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s sslmode=disable",
 		os.Getenv("PGHOST"), os.Getenv("PGPORT"), os.Getenv("PGDATABASE"), os.Getenv("PGUSER"))
 	if password := os.Getenv("PGPASSWORD"); password != "" {

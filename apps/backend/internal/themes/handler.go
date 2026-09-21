@@ -25,11 +25,11 @@ func NewHandler(store ThemeStore) *Handler {
 }
 
 func HandleRoot(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, map[string]string{"message": "Moodle Theme Shop API"})
+	writeJSON(w, http.StatusOK, map[string]string{"message": "Moodle Theme Shop API"})
 }
 
 func HandleHealth(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, map[string]string{"status": "ok"})
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
 func (h *Handler) HandleThemes(w http.ResponseWriter, r *http.Request) {
@@ -50,17 +50,17 @@ func (h *Handler) getThemes(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, summaries)
+	writeJSON(w, http.StatusOK, summaries)
 }
 
 func (h *Handler) HandleThemeByID(w http.ResponseWriter, r *http.Request) {
-	myId := strings.TrimPrefix(r.URL.Path, "/Themes/")
-	if myId == "" {
+	myID := strings.TrimPrefix(r.URL.Path, "/themes/")
+	if myID == "" {
 		http.NotFound(w, r)
 		return
 	}
 
-	theme, err := h.store.GetByID(r.Context(), myId)
+	theme, err := h.store.GetByID(r.Context(), myID)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.NotFound(w, r)
 		return
@@ -71,7 +71,7 @@ func (h *Handler) HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, theme)
+	writeJSON(w, http.StatusOK, theme)
 }
 
 func (h *Handler) postTheme(w http.ResponseWriter, r *http.Request) {
@@ -102,13 +102,17 @@ func (h *Handler) postTheme(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, created)
+	writeJSON(w, http.StatusCreated, created)
 }
 
-func writeJSON(w http.ResponseWriter, data any) {
+func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	json.NewEncoder(w).Encode(data)
+	w.WriteHeader(status)
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("encode JSON response: %v", err)
+	}
 }
 
 // legacy code for Postgresql

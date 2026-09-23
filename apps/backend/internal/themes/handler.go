@@ -1,19 +1,12 @@
 package themes
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
-	"time"
-
-	"github.com/cenkalti/backoff/v4"
-	"github.com/lib/pq"
 )
 
 type Handler struct {
@@ -113,48 +106,4 @@ func writeJSON(w http.ResponseWriter, status int, data any) {
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Printf("encode JSON response: %v", err)
 	}
-}
-
-// legacy code for Postgresql
-func databasehandler() *sql.DB {
-	cfg := pq.Config{
-		Host:           "localhost",
-		Port:           5432,
-		Database:       "Themeshop",
-		User:           "test",
-		Password:       "test",
-		ConnectTimeout: 5 * time.Second,
-		SSLMode:        pq.SSLMode("disable"),
-	}
-
-	c, err := pq.NewConnectorConfig(cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db := sql.OpenDB(c)
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-		db.Close()
-	}
-
-	return db
-}
-
-func RoachDb(ctx context.Context) (*sql.DB, error) {
-	pgConnString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s sslmode=disable",
-		os.Getenv("PGHOST"), os.Getenv("PGPORT"), os.Getenv("PGDATABASE"), os.Getenv("PGUSER"))
-	if password := os.Getenv("PGPASSWORD"); password != "" {
-		pgConnString += fmt.Sprintf(" password=%s", password)
-	}
-	var db *sql.DB
-	var err error
-	openDB := func() error {
-		db, err = sql.Open("postgres", pgConnString)
-		return err
-	}
-	err = backoff.Retry(openDB, backoff.NewExponentialBackOff())
-	return db, nil
 }

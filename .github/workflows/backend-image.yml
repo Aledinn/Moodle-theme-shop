@@ -4,7 +4,13 @@ on:
   push:
     tags:
       - "v*.*.*"
-    
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to publish, for example v1.0.1"
+        required: true
+        type: string
+
 permissions:
   contents: read
   packages: write
@@ -35,5 +41,5 @@ jobs:
           file: ./apps/backend/dockerfile
           push: true
           tags: |
-            ghcr.io/aledinn/moodle-theme-shop-backend:${{ github.ref_name }}
+            ghcr.io/aledinn/moodle-theme-shop-backend:${{ inputs.image_tag || github.ref_name }}
             ghcr.io/aledinn/moodle-theme-shop-backend:latest

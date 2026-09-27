@@ -35,5 +35,5 @@ jobs:
           file: ./apps/backend/dockerfile
           push: true
           tags: |
-            ghcr.io/${{ githu.repository_owner }}/moodle-theme-shop-backend:${{ github.ref_name }}
-            ghcr.io/${{ githu.repository_owner }}/moodle-theme-shop-backend:latest
+            ghcr.io/${{ github.repository_owner }}/moodle-theme-shop-backend:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/moodle-theme-shop-backend:latest

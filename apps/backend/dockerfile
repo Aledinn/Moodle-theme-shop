@@ -14,7 +14,7 @@ COPY internal/themes/*.go ./internal/themes/
 RUN CGO_ENABLED=0 GOOS=linux go build -o /moodle-shop-image ./cmd/server
 
 FROM  build-stage AS run-test-stage
-RUN go test -v ./interal/themes/...
+RUN go test -v ./internal/themes/...
 
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
 

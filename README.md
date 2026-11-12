@@ -4,7 +4,7 @@ Moodle Theme Shop is a work-in-progress proof of concept for a community-driven 
 
 The project is experimental, incomplete, and primarily intended for learning and validating the idea rather than production use.
 
-Starting with the commit that introduces this note, all future commits will be AI-assisted to accelerate development and help achieve the project's intended goals.
+Starting with commit `b7126a9`, all future commits will be AI-assisted to accelerate development and help achieve the project's intended goals.
 
 ## Installation
 

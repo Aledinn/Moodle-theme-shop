@@ -28,6 +28,13 @@ Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, 
 
 The backend API will be available at `http://localhost:8080`.
 
+## Contributing with AI
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the issue, branch, PR and separate-review
+workflow. [AGENTS.md](AGENTS.md) contains the shared project handbook; reusable
+Codex procedures live in [.agents/skills](.agents/skills). GitHub issue and PR
+templates collect scope, acceptance criteria, validation and review evidence.
+
 ## Project Status
 
 The [portable theme contract and shared fixtures](contracts/theme/README.md) define

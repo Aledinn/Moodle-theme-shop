@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review a shop change"
+  short_description: "Review a pinned change against its issue"
+  default_prompt: "Use $shop-review-change to review the PR and full commit SHA I provide without merging."

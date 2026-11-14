@@ -1,0 +1,4 @@
+interface:
+  display_name: "File a shop issue"
+  short_description: "Draft or create a focused project ticket"
+  default_prompt: "Use $shop-file-issue to draft a ticket for the problem I describe."

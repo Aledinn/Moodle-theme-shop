@@ -1,0 +1,40 @@
+name: Feature or technical task
+description: Define a focused piece of work with scope and verification.
+title: "[Task] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and intended result
+      description: Explain who needs this and what should change.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: List what belongs in this task and any boundaries needed to keep it focused.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Parent issue and dependencies
+      description: "Use Part of #N and Depends on #N as appropriate, or write None."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Use a checklist of observable results.
+      placeholder: "- [ ] A user can ..."
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: How will this be tested? Include any required real-browser, Moodle or manual checks.
+    validations:
+      required: true

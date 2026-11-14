@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ship a shop task"
+  short_description: "Commit, open a PR and arrange separate review"
+  default_prompt: "Use $shop-ship-task to commit, push and open a PR for this task."

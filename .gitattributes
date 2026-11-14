@@ -1,0 +1,3 @@
+# Contract fixtures include exact byte limits, invalid UTF-8, and an original export.
+# Preserve their bytes on checkout on every platform.
+contracts/theme/fixtures/** -text whitespace=cr-at-eol

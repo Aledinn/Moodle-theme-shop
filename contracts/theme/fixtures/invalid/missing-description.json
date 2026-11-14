@@ -1,0 +1,14 @@
+{
+  "author": "Author Name",
+  "name": "Active Editing Theme",
+  "rules": [
+    {
+      "properties": {
+        "background-color": "#123456"
+      },
+      "selector": "h1.course-title"
+    }
+  ],
+  "site": "127.0.0.1",
+  "version": "0.1"
+}

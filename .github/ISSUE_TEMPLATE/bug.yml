@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible problem with the API, extension or theme format.
+title: "[Bug] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Actual and expected behavior
+      description: What happens, and what should happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include a minimal example; remove credentials and personal data.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser/extension version or commit, operating system, and relevant Moodle/API details.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Relevant errors, screenshots or redacted logs. Optional if the reproduction is sufficient.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria and verification
+      description: Describe the observable result that would prove this is fixed, and how to check it.
+    validations:
+      required: true
+  - type: textarea
+    id: related
+    attributes:
+      label: Related issues and dependencies
+      description: Link existing tickets or write None. A suspected code location is also useful.

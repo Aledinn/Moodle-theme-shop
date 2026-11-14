@@ -6,12 +6,14 @@ on:
       - main
     paths:
       - "apps/extension/**"
+      - "contracts/theme/**"
       - ".github/workflows/extension-ci.yml"
   pull_request:
     branches:
       - main
     paths:
       - "apps/extension/**"
+      - "contracts/theme/**"
       - ".github/workflows/extension-ci.yml"
 
 jobs:
@@ -39,6 +41,12 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Install contract test browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Shared contract fixtures in Chromium
+        run: npm test
 
       - name: Build
         run: npm run build

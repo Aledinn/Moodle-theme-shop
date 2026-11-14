@@ -1,0 +1,13 @@
+{
+  "author": "Author Name",
+  "description": "",
+  "name": "Active Editing Theme",
+  "rules": [
+    {
+      "selector": "h1",
+      "properties": {}
+    }
+  ],
+  "site": "127.0.0.1",
+  "version": "0.1"
+}

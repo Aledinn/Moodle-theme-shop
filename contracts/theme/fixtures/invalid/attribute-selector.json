@@ -1,0 +1,13 @@
+{
+  "author": "Author Name",
+  "description": "Theme currently being edited",
+  "name": "Active Editing Theme",
+  "rules": [
+    {
+      "selector": "a[href]",
+      "properties": {}
+    }
+  ],
+  "site": "127.0.0.1",
+  "version": "0.1"
+}

@@ -1,0 +1,49 @@
+{
+  "author": "Author Name",
+  "description": "Theme currently being edited",
+  "name": "Active Editing Theme",
+  "rules": [
+    {
+      "selector": "div.course-title p",
+      "properties": {
+        "font-family": "Arial, sans-serif",
+        "color": "#AbC",
+        "background-color": "#112233"
+      }
+    },
+    {
+      "selector": "div.course-title p",
+      "properties": {
+        "font-family": "Verdana, sans-serif",
+        "color": "#AbC",
+        "background-color": "#112233"
+      }
+    },
+    {
+      "selector": "div.course-title p",
+      "properties": {
+        "font-family": "Georgia, serif",
+        "color": "#AbC",
+        "background-color": "#112233"
+      }
+    },
+    {
+      "selector": "div.course-title p",
+      "properties": {
+        "font-family": "'Courier New', monospace",
+        "color": "#AbC",
+        "background-color": "#112233"
+      }
+    },
+    {
+      "selector": "div.course-title p",
+      "properties": {
+        "font-family": "system-ui, sans-serif",
+        "color": "#AbC",
+        "background-color": "#112233"
+      }
+    }
+  ],
+  "site": "moodle.informatik.tu-darmstadt.de",
+  "version": "0.1"
+}

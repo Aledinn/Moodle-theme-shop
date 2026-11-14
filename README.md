@@ -30,4 +30,8 @@ The backend API will be available at `http://localhost:8080`.
 
 ## Project Status
 
+The [portable theme contract and shared fixtures](contracts/theme/README.md) define
+the download/import format, limits, CSS subset, API string IDs, and compatibility
+policy. Run its Go and Chromium checks before changing the interchange format.
+
 This project is currently a work in progress and serves as a proof of concept. Core features are functional, but the project is still experimental and may contain bugs, incomplete features, or breaking changes. It is not intended for production use yet.

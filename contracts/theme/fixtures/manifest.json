@@ -1,0 +1,539 @@
+{
+  "revision": 1,
+  "cases": [
+    {
+      "file": "fixtures/valid/editor-export.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": "Unmodified editor download from the local lifecycle verification."
+    },
+    {
+      "file": "fixtures/valid/bundled-example.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": "Existing extension public/theme.json."
+    },
+    {
+      "file": "fixtures/valid/all-editor-fonts.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": ""
+    },
+    {
+      "file": "fixtures/valid/empty-editor.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": ""
+    },
+    {
+      "file": "fixtures/valid/no-rules.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": ""
+    },
+    {
+      "file": "fixtures/valid/boundaries.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": ""
+    },
+    {
+      "file": "fixtures/valid/unicode-metadata.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": ""
+    },
+    {
+      "file": "fixtures/invalid/missing-author.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "All six portable fields are required; no defaulting."
+    },
+    {
+      "file": "fixtures/invalid/missing-description.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "All six portable fields are required; no defaulting."
+    },
+    {
+      "file": "fixtures/invalid/missing-name.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "All six portable fields are required; no defaulting."
+    },
+    {
+      "file": "fixtures/invalid/missing-rules.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "All six portable fields are required; no defaulting."
+    },
+    {
+      "file": "fixtures/invalid/missing-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "All six portable fields are required; no defaulting."
+    },
+    {
+      "file": "fixtures/invalid/missing-version.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "All six portable fields are required; no defaulting."
+    },
+    {
+      "file": "fixtures/invalid/long-name.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Metadata length limit."
+    },
+    {
+      "file": "fixtures/invalid/long-author.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Metadata length limit."
+    },
+    {
+      "file": "fixtures/invalid/long-description.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Metadata length limit."
+    },
+    {
+      "file": "fixtures/invalid/long-version.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Metadata length limit."
+    },
+    {
+      "file": "fixtures/invalid/hostile-metadata.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Markup delimiters are outside plain-text metadata."
+    },
+    {
+      "file": "fixtures/invalid/bidi-metadata.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Bidi override is forbidden."
+    },
+    {
+      "file": "fixtures/invalid/control-metadata.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Control characters are forbidden."
+    },
+    {
+      "file": "fixtures/invalid/blank-name.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Required metadata cannot be whitespace only."
+    },
+    {
+      "file": "fixtures/invalid/numeric-version.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Author version is a string."
+    },
+    {
+      "file": "fixtures/invalid/null-rules.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Rules must be an array."
+    },
+    {
+      "file": "fixtures/invalid/too-many-rules.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Rule count exceeds 500."
+    },
+    {
+      "file": "fixtures/invalid/long-selector.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Selector exceeds 512 characters."
+    },
+    {
+      "file": "fixtures/invalid/long-value.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Value exceeds 128 characters."
+    },
+    {
+      "file": "fixtures/invalid/long-property.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Property names are allowlisted and at most 32 characters."
+    },
+    {
+      "file": "fixtures/invalid/selector-injection.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "CSS injection."
+    },
+    {
+      "file": "fixtures/invalid/pseudo-selector.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Pseudo selectors are unsupported."
+    },
+    {
+      "file": "fixtures/invalid/attribute-selector.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Attribute selectors are unsupported."
+    },
+    {
+      "file": "fixtures/invalid/escaped-selector.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Escaped identifiers are outside revision 1."
+    },
+    {
+      "file": "fixtures/invalid/invalid-selector.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Invalid CSS syntax."
+    },
+    {
+      "file": "fixtures/invalid/unknown-rule-field.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Rule extensions must be negotiated."
+    },
+    {
+      "file": "fixtures/invalid/external-resource.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "External resource functions are forbidden."
+    },
+    {
+      "file": "fixtures/invalid/data-resource.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Data URLs are forbidden."
+    },
+    {
+      "file": "fixtures/invalid/css-variable.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "CSS functions are unsupported."
+    },
+    {
+      "file": "fixtures/invalid/important.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Declaration modifiers are unsupported."
+    },
+    {
+      "file": "fixtures/invalid/unsupported-property.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Only current editor properties are supported."
+    },
+    {
+      "file": "fixtures/invalid/unsupported-font.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Only current editor font stacks are supported."
+    },
+    {
+      "file": "fixtures/invalid/named-color.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Only editor-compatible hex colors are supported."
+    },
+    {
+      "file": "fixtures/invalid/schema-version.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "No new schema field is accepted."
+    },
+    {
+      "file": "fixtures/invalid/portable-id.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Database IDs are not portable."
+    },
+    {
+      "file": "fixtures/invalid/account-field.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Account data is not portable."
+    },
+    {
+      "file": "fixtures/invalid/session-field.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Session data is not portable."
+    },
+    {
+      "file": "fixtures/invalid/url-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/port-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/wildcard-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/uppercase-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/trailing-dot-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/invalid-ip.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/single-label-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/ipv6-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/unicode-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/path-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/long-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Unsupported or noncanonical site; reject without retargeting."
+    },
+    {
+      "file": "fixtures/invalid/malformed.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Strict UTF-8 JSON, unique keys, one value, at most 262144 bytes."
+    },
+    {
+      "file": "fixtures/invalid/trailing-json.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Strict UTF-8 JSON, unique keys, one value, at most 262144 bytes."
+    },
+    {
+      "file": "fixtures/invalid/duplicate-field.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Strict UTF-8 JSON, unique keys, one value, at most 262144 bytes."
+    },
+    {
+      "file": "fixtures/invalid/oversized.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Strict UTF-8 JSON, unique keys, one value, at most 262144 bytes."
+    },
+    {
+      "file": "fixtures/invalid/invalid-utf8.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Strict UTF-8 JSON, unique keys, one value, at most 262144 bytes."
+    },
+    {
+      "file": "fixtures/invalid/bom.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Strict UTF-8 JSON, unique keys, one value, at most 262144 bytes."
+    },
+    {
+      "file": "fixtures/api/large-string-id.json",
+      "kind": "api",
+      "valid": true,
+      "reason": "ID must survive JavaScript without rounding."
+    },
+    {
+      "file": "fixtures/api/opaque-id.json",
+      "kind": "api",
+      "valid": true,
+      "reason": "Consumers must not interpret IDs as numbers."
+    },
+    {
+      "file": "fixtures/api/numeric-id.json",
+      "kind": "api",
+      "valid": false,
+      "reason": "Numeric IDs lose precision in JavaScript."
+    },
+    {
+      "file": "fixtures/api/summary-rules.json",
+      "kind": "api",
+      "valid": false,
+      "reason": "Summary metadata has no rules."
+    },
+    {
+      "file": "fixtures/invalid/newline-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Reject trailing control characters consistently across regex engines."
+    },
+    {
+      "file": "fixtures/invalid/newline-selector.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Reject trailing control characters consistently across regex engines."
+    },
+    {
+      "file": "fixtures/invalid/newline-color.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Reject trailing control characters consistently across regex engines."
+    },
+    {
+      "file": "fixtures/invalid/newline-name.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Reject trailing control characters consistently across regex engines."
+    },
+    {
+      "file": "fixtures/invalid/surrogate-high.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "surrogate high"
+    },
+    {
+      "file": "fixtures/invalid/surrogate-low.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "surrogate low"
+    },
+    {
+      "file": "fixtures/invalid/surrogate-pair-invalid.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "surrogate pair invalid"
+    },
+    {
+      "file": "fixtures/valid/literal-backslash-u.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": "literal backslash u"
+    },
+    {
+      "file": "fixtures/valid/punycode-site.json",
+      "kind": "portable",
+      "valid": true,
+      "reason": "punycode site"
+    },
+    {
+      "file": "fixtures/invalid/selector-list.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "selector list"
+    },
+    {
+      "file": "fixtures/invalid/child-combinator.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "child combinator"
+    },
+    {
+      "file": "fixtures/invalid/css-comment.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "css comment"
+    },
+    {
+      "file": "fixtures/invalid/at-rule.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "at rule"
+    },
+    {
+      "file": "fixtures/invalid/declaration-injection.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "declaration injection"
+    },
+    {
+      "file": "fixtures/invalid/expression.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "expression"
+    },
+    {
+      "file": "fixtures/invalid/functional-color.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "functional color"
+    },
+    {
+      "file": "fixtures/invalid/custom-property.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "custom property"
+    },
+    {
+      "file": "fixtures/invalid/duplicate-property.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Reject duplicate decoded keys at all object depths."
+    },
+    {
+      "file": "fixtures/invalid/duplicate-escaped-field.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Reject duplicate decoded keys at all object depths."
+    },
+    {
+      "file": "fixtures/invalid/deep-json.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Transport nesting limit."
+    },
+    {
+      "file": "fixtures/invalid/unicode-whitespace-name.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Cross-language rejection of Unicode whitespace/line separators and unknown keys."
+    },
+    {
+      "file": "fixtures/invalid/line-separator-site.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Cross-language rejection of Unicode whitespace/line separators and unknown keys."
+    },
+    {
+      "file": "fixtures/invalid/line-separator-name.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Cross-language rejection of Unicode whitespace/line separators and unknown keys."
+    },
+    {
+      "file": "fixtures/invalid/prototype-field.json",
+      "kind": "portable",
+      "valid": false,
+      "reason": "Cross-language rejection of Unicode whitespace/line separators and unknown keys."
+    }
+  ]
+}

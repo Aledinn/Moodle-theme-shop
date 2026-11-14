@@ -5,9 +5,10 @@ and extension imports. `portable.schema.json` (JSON Schema draft 7), the transpo
 rules below, and `fixtures/manifest.json` are normative together. The schema alone
 cannot enforce file size, duplicate JSON keys, or browser CSS parsing.
 
-This ticket defines the contract and supplies independent contract checks; existing
-HTTP handlers and extension installation paths are not yet wired to those checks.
-Accounts, publication state, moderation, API routing, and UI are separate work.
+The website download endpoint validates its explicit portable projection before
+sending it. Legacy uploads and extension installation paths retain their existing
+behavior and are not wired to these checks. Accounts, publication state,
+moderation, and UI are separate work.
 
 ## Portable object
 

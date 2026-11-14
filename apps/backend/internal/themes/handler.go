@@ -48,8 +48,8 @@ func (h *Handler) getThemes(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 	myID := strings.TrimPrefix(r.URL.Path, "/themes/")
-	if myID == "" {
-		http.NotFound(w, r)
+	if !validID(myID) {
+		apiError(w, http.StatusBadRequest, "invalid_id", "id must be a canonical nonnegative INT8 decimal string")
 		return
 	}
 

@@ -1,4 +1,4 @@
-package themecontract
+package themecontract_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"moodle-theme-shop-backend/internal/themecontract"
 	"moodle-theme-shop-backend/internal/themes"
 )
 
@@ -20,9 +21,9 @@ func TestSharedFixtures(t *testing.T) {
 		}
 		return data
 	}
-	validators := map[string]*Validator{}
+	validators := map[string]*themecontract.Validator{}
 	for kind, file := range map[string]string{"portable": "portable.schema.json", "api": "api-summary.schema.json"} {
-		v, err := New(read(file))
+		v, err := themecontract.New(read(file))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -86,7 +87,7 @@ func TestSharedFixtures(t *testing.T) {
 		t.Fatal(err)
 	}
 	data := read("fixtures/valid/editor-export.json")
-	boundary := append(bytes.Clone(data), bytes.Repeat([]byte(" "), MaxBytes-len(data))...)
+	boundary := append(bytes.Clone(data), bytes.Repeat([]byte(" "), themecontract.MaxBytes-len(data))...)
 	if err := validators["portable"].Validate(boundary); err != nil {
 		t.Fatal(err)
 	}

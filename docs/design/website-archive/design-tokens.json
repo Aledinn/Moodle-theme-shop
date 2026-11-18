@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "name": "Moodle Theme Archive — Editorial Swiss",
+    "source": "sampled from user-supplied 1448×1086 raster reference; approximate, not original source values",
+    "corner_radius": "0px"
+  },
+  "colors": {
+    "paper": "#F8F2E8",
+    "paper-warm": "#F8F0E2",
+    "ink": "#101014",
+    "blue": "#0639B5",
+    "blue-hover": "#002B8F",
+    "red": "#DF231F",
+    "red-hover": "#BE1E1A",
+    "line": "#15151A",
+    "subtle-line": "#A7A39A",
+    "muted": "#4D4B4A",
+    "white": "#FFFFFF"
+  },
+  "typography": {
+    "display": {
+      "family": "Anton",
+      "fallback": "Impact, Arial Narrow, sans-serif",
+      "source": "close visual match, exact screenshot font not verifiable",
+      "weight": "400"
+    },
+    "headings": {
+      "family": "Barlow Condensed",
+      "fallback": "Arial Narrow, sans-serif",
+      "weights": [
+        700,
+        800,
+        900
+      ]
+    },
+    "body": {
+      "family": "Barlow Condensed",
+      "fallback": "Arial, sans-serif",
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ]
+    },
+    "google_fonts_css": "https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;500;600;700;800;900&display=swap"
+  },
+  "layout": {
+    "reference_canvas_px": [
+      1448,
+      1086
+    ],
+    "header_height_px": 76,
+    "hero_height_px": 216,
+    "sidebar_width_px": 296,
+    "main_columns_desktop": 4,
+    "main_columns_tablet": 2,
+    "main_columns_mobile": 1,
+    "main_grid_divider_px": 1,
+    "major_divider_px": 2,
+    "button_radius_px": 0,
+    "notes": [
+      "Header is horizontal and relatively tight",
+      "Hero uses oversized all-caps editorial lettering",
+      "Catalog starts directly below hero, with left filter rail",
+      "Preview thumbnails sit in dense square-corner cards",
+      "All typography, borders and geometric slashes are intentional identity elements"
+    ]
+  },
+  "interaction": {
+    "sort": [
+      "Popularity: high to low",
+      "Popularity: low to high",
+      "Name: A to Z",
+      "Name: Z to A"
+    ],
+    "filters": [
+      "Theme name search",
+      "University",
+      "Download/popularity range"
+    ],
+    "views": [
+      "Grid",
+      "List"
+    ],
+    "pagination": 12
+  }
+}

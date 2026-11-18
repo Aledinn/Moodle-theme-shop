@@ -44,6 +44,32 @@ try {
   await page.keyboard.press("Escape");
   await page.getByRole("dialog").waitFor({ state: "detached" });
 
+  // A longer live traversal previously overflowed mobile with one button per
+  // visited cursor. Exercise as many as the fixture supplies, up to ten pages.
+  for (let step = 0; step < 9; step++) {
+    const next = page.getByRole("button", { name: "Next", exact: true });
+    if (await next.isDisabled()) break;
+    await next.click();
+    await page.getByRole("status").waitFor({ state: "detached" });
+    assert.equal(await page.getByRole("alert").count(), 0);
+  }
+  for (const width of [320, 375]) {
+    await page.setViewportSize({ width, height: 812 });
+    assert.ok(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      `live pagination stays within ${width}px after repeated page navigation`,
+    );
+    assert.ok(
+      (await page
+        .getByRole("navigation", { name: "Theme pages" })
+        .getByRole("button")
+        .count()) <= 5,
+    );
+  }
+  await page.setViewportSize({ width: 1448, height: 1086 });
+
   await page.goto(`${origin}/?preview=design`);
   await page.evaluate(() => document.fonts.ready);
   assert.equal(await page.getByRole("article").count(), 12);

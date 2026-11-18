@@ -95,6 +95,15 @@ export function App() {
   const totalPages = sample
     ? Math.max(1, Math.ceil(filtered.length / perPage))
     : cursors.length;
+  // Keep the current page and its neighbours within a compact mobile control.
+  const firstPageButton = Math.min(
+    Math.max(page - 1, 0),
+    Math.max(totalPages - 3, 0),
+  );
+  const pageButtons = Array.from(
+    { length: Math.min(totalPages, 3) },
+    (_, offset) => firstPageButton + offset,
+  );
   const hasNext = sample
     ? page + 1 < totalPages
     : state.status === "success" && state.data.nextCursor !== null;
@@ -556,7 +565,7 @@ export function App() {
               >
                 <Icon name="arrow-left" />
               </button>
-              {Array.from({ length: totalPages }, (_, index) => (
+              {pageButtons.map((index) => (
                 <button
                   key={index}
                   className={page === index ? "is-current" : ""}

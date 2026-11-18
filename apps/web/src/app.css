@@ -102,6 +102,11 @@
   height: 18px;
   margin: auto;
 }
+.pagination {
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+}
 .info-dialog {
   width: min(520px, calc(100% - 32px));
   max-height: calc(100dvh - 32px);

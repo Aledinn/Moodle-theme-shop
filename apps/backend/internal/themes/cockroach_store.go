@@ -16,7 +16,20 @@ func NewCockroachStore(db *sql.DB) *CockroachStore {
 
 func (s *CockroachStore) List(ctx context.Context) ([]ThemeSummary, error) {
 	const query = `SELECT id, name, site ,author, description, version FROM themes`
-	rows, err := s.db.QueryContext(ctx, query)
+	return s.list(ctx, query)
+}
+
+// ListPage uses the indexed INT8 primary key, passing its decimal representation
+// directly to SQL. No floating-point or JavaScript number conversion is involved.
+func (s *CockroachStore) ListPage(ctx context.Context, afterID string, limit int) ([]ThemeSummary, error) {
+	if afterID == "" {
+		return s.list(ctx, `SELECT id, name, site, author, description, version FROM themes ORDER BY id ASC LIMIT $1`, limit)
+	}
+	return s.list(ctx, `SELECT id, name, site, author, description, version FROM themes WHERE id > $1::INT8 ORDER BY id ASC LIMIT $2`, afterID, limit)
+}
+
+func (s *CockroachStore) list(ctx context.Context, query string, args ...any) ([]ThemeSummary, error) {
+	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("list themes: %w", err)
 	}
@@ -40,7 +53,7 @@ func (s *CockroachStore) List(ctx context.Context) ([]ThemeSummary, error) {
 }
 
 func (s *CockroachStore) GetByID(ctx context.Context, id string) (Theme, error) {
-	const query = `SELECT * FROM themes WHERE id = $1`
+	const query = `SELECT id, name, site, author, description, version, rules FROM themes WHERE id = $1`
 	var theme Theme
 	err := s.db.QueryRowContext(ctx, query, id).Scan(
 		&theme.Id,

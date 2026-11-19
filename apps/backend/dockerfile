@@ -9,7 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY cmd/server/*.go ./cmd/server/
-COPY internal/themes/*.go ./internal/themes/
+COPY internal/ ./internal/
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /moodle-shop-image ./cmd/server
 

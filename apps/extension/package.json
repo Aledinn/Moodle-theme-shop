@@ -5,6 +5,7 @@
   "main": "cssinject.js",
   "scripts": {
     "test": "node tests/theme-contract.mjs",
+    "test:legacy": "node tests/legacy-shop.mjs",
     "typecheck": "tsc --noEmit",
     "build": "vite build"
   },

@@ -21,6 +21,10 @@ func (f *fakeStore) List(context.Context) ([]ThemeSummary, error) {
 	return f.listResult, f.listErr
 }
 
+func (f *fakeStore) ListPage(context.Context, string, int) ([]ThemeSummary, error) {
+	return f.listResult, f.listErr
+}
+
 func (f *fakeStore) GetByID(context.Context, string) (Theme, error) {
 	return f.getResult, f.getErr
 }

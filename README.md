@@ -28,6 +28,25 @@ Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, 
 
 The backend API will be available at `http://localhost:8080`.
 
+## Standalone website
+
+The React website is built independently of the extension:
+
+```bash
+cd apps/web
+npm ci
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`. Browser requests use same-origin `/api` URLs;
+Vite forwards them to port 8080 by default. The live catalog requires the
+website API from issue #2 / PR #17, which must land before this web foundation
+can run against the default branch's backend. The explicitly labeled
+`/?preview=design` view uses only the supplied illustrative design samples.
+
+See the [web setup and checks](apps/web/README.md) and
+[reusable website design reference](docs/design/website-archive/README.md).
+
 ## Contributing with AI
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the issue, branch, PR and separate-review

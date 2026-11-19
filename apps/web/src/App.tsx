@@ -497,7 +497,9 @@ export function App() {
                             downloads
                           </>
                         ) : (
-                          <span>Version {theme.version}</span>
+                          <span className="theme-card__version">
+                            Version {theme.version}
+                          </span>
                         )}
                       </div>
                       <button

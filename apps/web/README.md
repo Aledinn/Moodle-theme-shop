@@ -85,6 +85,8 @@ npm run build
 # With the dev server and Go API running:
 npx playwright install chromium
 npm run test:smoke
+# With the dev server running; uses controlled API responses, no Go API needed:
+npm run test:layout
 ```
 
 Unit/component checks cover response errors, malformed data, large IDs,

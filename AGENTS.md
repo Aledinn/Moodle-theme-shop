@@ -4,6 +4,9 @@
 
 - `apps/backend/`: Go HTTP API, `internal/themes/` handlers and database store,
   `migrations/` SQL, `cmd/server/` entry point.
+- `apps/web/`: standalone React/TypeScript/Vite catalog. Read
+  `docs/design/website-archive/README.md` before changing its visual design;
+  reuse the supplied reference, tokens, assets and typography.
 - `apps/extension/`: TypeScript Chrome extension built with Vite;
   `src/background/` manages editing/storage/application, `src/content/` hosts the
   editor, `src/popup/` and `src/shop/` are extension UI.
@@ -20,6 +23,7 @@ Run checks from the relevant app directory. Use the versions in `go.mod`, CI and
 | Change | Commands |
 | --- | --- |
 | Backend | In `apps/backend`: `go test -count=1 ./...`; format changed Go files with `gofmt` |
+| Website | In `apps/web`: `npm ci`, `npm run typecheck`, `npm test`, `npm run build`; with Go API and Vite running, `npm run test:smoke` |
 | Extension | In `apps/extension`: `npm ci` if dependencies need installing, `npm run typecheck`, `npm test`, `npm run build` |
 | Shared contract or fixtures | Both suites above; Go's test cache may miss files outside its module |
 | Browser setup | In `apps/extension`: `npx playwright install chromium`; Linux CI uses `--with-deps` |

@@ -1,0 +1,20 @@
+/* Approximate design tokens sampled from the supplied raster mockup. */
+:root {
+  --paper: #f8f2e8;
+  --paper-warm: #f8f0e2;
+  --ink: #101014;
+  --red: #df231f;
+  --red-hover: #be1e1a;
+  --blue: #0639b5;
+  --blue-hover: #002b8f;
+  --rule: #15151a;
+  --muted: #4d4b4a;
+  --font-display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --font-ui: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --radius: 0px;
+  --sidebar-width: 296px;
+  --header-height: 76px;
+  --hero-height: 216px;
+  --rule-width: 1px;
+  --heavy-rule-width: 2px;
+}

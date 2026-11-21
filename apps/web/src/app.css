@@ -23,6 +23,11 @@
 .theme-grid.is-list .theme-card:has(.theme-card__description) .theme-card__footer {
   grid-row: 1 / 5;
 }
+@media (max-width: 780px) {
+  .theme-grid.is-list .theme-card:has(.theme-card__description) .theme-card__footer {
+    grid-row: 5;
+  }
+}
 .theme-details {
   width: min(760px, 100%);
   margin: auto;

@@ -25,11 +25,19 @@ try {
   await page.goto(origin);
   const link = page.getByRole("link", { name: theme.name, exact: true });
   await link.waitFor();
-  for (const width of [320, 375, 1280]) {
+  for (const width of [320, 375, 600, 780, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     for (const layout of ["Grid", "List"]) {
       await page.getByRole("button", { name: `${layout} view` }).click();
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${layout} fits ${width}px`);
+      assert.ok(await page.locator(".theme-card").evaluate((card) => {
+        const footer = card.querySelector(".theme-card__footer").getBoundingClientRect();
+        return [...card.querySelectorAll("h3, .theme-card__description, .theme-card__meta")].every((field) => {
+          const bounds = field.getBoundingClientRect();
+          return bounds.right <= footer.left || bounds.left >= footer.right ||
+            bounds.bottom <= footer.top || bounds.top >= footer.bottom;
+        });
+      }), `${layout} metadata and footer do not overlap at ${width}px`);
       assert.equal(await page.locator('img[src="x"], script:not([type="module"])').count(), 0);
     }
   }

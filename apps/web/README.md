@@ -15,13 +15,6 @@ binds to the local machine. The website is a single-page catalog following the
 supplied Moodle Theme Archive design kit: condensed typography, cream paper,
 red and cobalt accents, a compact cover banner, filter rail and four-column grid.
 Guidance and metadata open in accessible dialogs; there is no authentication UI.
-This single-page direction supersedes the original multi-route UI design in
-issue #3. Separate detail/install routes are not implemented, so this foundation
-is related work rather than a claim that all of #3 is complete.
-
-The live API requires issue #2 / PR #17. Until that dependency lands, the backend
-on `main` does not expose the `/api/themes` routes. Run the API branch locally or
-use the self-contained design sample view for visual review.
 
 The [reusable design reference](../../docs/design/website-archive/README.md)
 preserves the supplied visual target, specification and portable tokens for
@@ -49,6 +42,22 @@ require Google Fonts. Tokens are kept in `src/design-tokens.css`; the supplied
 starter styles and React integration refinements are separate stylesheets.
 
 Downloads and file import remain separate work in progress.
+
+## Catalog navigation
+
+Live catalog cards display name, description, author, version and supported
+hostname as text. Theme names link to stable `/themes/{id}` metadata pages;
+IDs stay strings throughout, including values larger than JavaScript's safe
+integer range. Details URLs work on direct navigation and refresh when the host
+provides the SPA fallback described below.
+
+Previous/Next and up to three page buttons use the server's opaque cursors. Each
+request fetches only the selected page (12, 24 or 48 items); there is no catalog
+prefetch. The previous successful page stays usable during loading and errors,
+and its page number changes only after a successful response. Retry repeats the
+failed request. Page controls prevent overlapping submissions. The last page
+shows **End of results**. Pagination follows the backend's live traversal policy,
+so changes to the dataset between requests can change page membership.
 
 ## Same-origin API
 
@@ -82,6 +91,8 @@ npm ci
 npm run typecheck
 npm test
 npm run build
+# Self-contained Chromium check with curated local API responses:
+npm run test:catalog
 # With the dev server and Go API running:
 npx playwright install chromium
 npm run test:smoke
@@ -97,6 +108,11 @@ exact path/query forwarding and the configurable target. The browser smoke test
 separately requires a successful real Go API response through the development
 origin and checks both catalog modes, local image/font loading, search/filter
 interactions, modal keyboard access, page refresh and grid/list mobile overflow.
+The separate `test:catalog` check starts and stops its own Vite server and checks
+long/hostile metadata at 320px, 375px and desktop widths, keyboard activation of
+a details link, and details refresh. It does not require or verify a running Go
+API or database. Component tests also cover retained pages, duplicate-request
+prevention, a failed continuation and retry, and a stable three-page traversal.
 Set `WEB_URL` to check a different dev port. Screenshots go to ignored `.cache/`.
 
 `npm run build` writes static assets to `dist/`. `npm run preview` serves them

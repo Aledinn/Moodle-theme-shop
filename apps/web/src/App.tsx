@@ -1,6 +1,7 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
 import { listThemes } from "./api";
 import { useRequest } from "./useRequest";
+import { ThemeDetails } from "./ThemeDetails";
 import {
   defaultFilters,
   designSamples,
@@ -9,6 +10,11 @@ import {
   popularityBands,
 } from "./catalog";
 import type { Filters } from "./catalog";
+
+export function App() {
+  const match = /^\/themes\/([^/]+)\/?$/.exec(window.location.pathname);
+  return match ? <ThemeDetails id={match[1]} /> : <CatalogApp />;
+}
 
 function Icon({ name, className = "" }: { name: string; className?: string }) {
   return (
@@ -50,16 +56,18 @@ function InfoDialog({
   );
 }
 
-export function App() {
+export function CatalogApp() {
   const sample =
     new URLSearchParams(window.location.search).get("preview") === "design";
   const [filters, setFilters] = useState(() => defaultFilters(sample));
   const [expanded, setExpanded] = useState(false);
   const [view, setView] = useState("grid");
   const [perPage, setPerPage] = useState(12);
+  const [traversal, setTraversal] = useState(0);
   const [page, setPage] = useState(0);
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [attempt, setAttempt] = useState(0);
+  const navigating = useRef(false);
   const [dialog, setDialog] = useState<{
     title: string;
     body: React.ReactNode;
@@ -68,15 +76,22 @@ export function App() {
   const load = useCallback(
     (signal: AbortSignal) =>
       sample
-        ? Promise.resolve({ items: [], nextCursor: null })
-        : listThemes({ limit: perPage, cursor, signal }),
-    [sample, perPage, cursor, attempt],
+        ? Promise.resolve({ items: [], nextCursor: null, page: 0, traversal })
+        : listThemes({ limit: perPage, cursor, signal })
+            .then((data) => ({ ...data, page, traversal }))
+            .finally(() => {
+              if (!signal.aborted) navigating.current = false;
+            }),
+    [sample, perPage, cursor, page, attempt, traversal],
   );
-  const state = useRequest(load);
+  const state = useRequest(load, true);
+  // A new page size starts a new traversal; old cursors/data belong to the old size.
+  const data = state.data?.traversal === traversal ? state.data : undefined;
+  const displayedPage = sample ? page : (data?.page ?? 0);
   const themes = sample
     ? designSamples
-    : state.status === "success"
-      ? state.data.items.map(fromApi)
+    : data
+      ? data.items.map(fromApi)
       : [];
   const filtered = filterThemes(themes, filters);
   const visible = sample
@@ -97,7 +112,7 @@ export function App() {
     : cursors.length;
   // Keep the current page and its neighbours within a compact mobile control.
   const firstPageButton = Math.min(
-    Math.max(page - 1, 0),
+    Math.max(displayedPage - 1, 0),
     Math.max(totalPages - 3, 0),
   );
   const pageButtons = Array.from(
@@ -106,7 +121,7 @@ export function App() {
   );
   const hasNext = sample
     ? page + 1 < totalPages
-    : state.status === "success" && state.data.nextCursor !== null;
+    : !!data && data.nextCursor !== null;
   const busy = !sample && state.status === "loading";
   const updateFilters = (patch: Partial<Filters>) => {
     setFilters((previous) => ({ ...previous, ...patch }));
@@ -116,19 +131,21 @@ export function App() {
     values.includes(value)
       ? values.filter((item) => item !== value)
       : [...values, value];
+  const goToPage = (index: number) => {
+    if (busy || navigating.current || index === displayedPage) return;
+    navigating.current = !sample;
+    setPage(index);
+    setAttempt((value) => value + 1);
+  };
   const next = () => {
-    if (!hasNext || busy) return;
-    if (
-      !sample &&
-      state.status === "success" &&
-      state.data.nextCursor !== null
-    ) {
+    if (!hasNext || busy || navigating.current) return;
+    if (!sample && data?.nextCursor) {
       setCursors((previous) => [
-        ...previous.slice(0, page + 1),
-        state.data.nextCursor!,
+        ...previous.slice(0, displayedPage + 1),
+        data.nextCursor!,
       ]);
     }
-    setPage((value) => value + 1);
+    goToPage(displayedPage + 1);
   };
   const guide = () =>
     setDialog({
@@ -447,7 +464,7 @@ export function App() {
               </button>
             </div>
           )}
-          {(sample || state.status === "success") && (
+          {(sample || data) && (
             <>
               <div className={`theme-grid ${view === "list" ? "is-list" : ""}`}>
                 {visible.map((theme) => (
@@ -474,8 +491,17 @@ export function App() {
                       )}
                     </div>
                     <h3 id={`theme-${theme.id}`} title={theme.name}>
-                      {theme.name}
+                      {sample ? theme.name : (
+                        <a href={`/themes/${encodeURIComponent(theme.id)}`}>
+                          {theme.name}
+                        </a>
+                      )}
                     </h3>
+                    {!sample && (
+                      <p className="theme-card__description">
+                        {theme.description || "No description available."}
+                      </p>
+                    )}
                     <div className="theme-card__meta" title={theme.author}>
                       by {theme.author}
                     </div>
@@ -551,18 +577,21 @@ export function App() {
               )}
             </>
           )}
+          {!sample && data && !busy && !hasNext && (
+            <p role="status" className="catalog-end">End of results.</p>
+          )}
           <footer className="catalog__footer">
             <p aria-live="polite">
               {sample
                 ? visible.length
                   ? `SHOWING ${page * perPage + 1} – ${page * perPage + visible.length} OF ${filtered.length} THEMES`
                   : "NO THEMES FOUND"
-                : `${visible.length} THEMES ON PAGE ${page + 1}`}
+                : `${visible.length} THEMES ON PAGE ${displayedPage + 1}`}
             </p>
             <nav aria-label="Theme pages" className="pagination">
               <button
-                disabled={page === 0 || busy}
-                onClick={() => setPage((value) => value - 1)}
+                disabled={displayedPage === 0 || busy}
+                onClick={() => goToPage(displayedPage - 1)}
                 aria-label="Previous"
               >
                 <Icon name="arrow-left" />
@@ -570,10 +599,10 @@ export function App() {
               {pageButtons.map((index) => (
                 <button
                   key={index}
-                  className={page === index ? "is-current" : ""}
-                  aria-current={page === index ? "page" : undefined}
+                  className={displayedPage === index ? "is-current" : ""}
+                  aria-current={displayedPage === index ? "page" : undefined}
                   disabled={busy}
-                  onClick={() => setPage(index)}
+                  onClick={() => goToPage(index)}
                 >
                   {index + 1}
                 </button>
@@ -590,9 +619,11 @@ export function App() {
               ITEMS PER PAGE:{" "}
               <select
                 aria-label="Items per page"
+                disabled={busy}
                 value={perPage}
                 onChange={(event) => {
                   setPerPage(Number(event.target.value));
+                  setTraversal((value) => value + 1);
                   setPage(0);
                   setCursors([undefined]);
                 }}

@@ -26,7 +26,7 @@ try {
   );
   assert.ok(Array.isArray(api.body.items));
   await page.getByRole("heading", { level: 1 }).waitFor();
-  await page.getByRole("status").waitFor({ state: "detached" });
+  await page.getByText("Loading themes...", { exact: true }).waitFor({ state: "detached" });
   assert.equal(await page.getByRole("alert").count(), 0);
   assert.equal(await page.getByRole("article").count(), api.body.items.length);
   await page.keyboard.press("Tab");
@@ -50,7 +50,7 @@ try {
     const next = page.getByRole("button", { name: "Next", exact: true });
     if (await next.isDisabled()) break;
     await next.click();
-    await page.getByRole("status").waitFor({ state: "detached" });
+    await page.getByText("Loading themes...", { exact: true }).waitFor({ state: "detached" });
     assert.equal(await page.getByRole("alert").count(), 0);
   }
   for (const width of [320, 375]) {

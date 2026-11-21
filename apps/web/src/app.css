@@ -1,6 +1,43 @@
 ﻿@import "./fonts.css";
 
 /* Adapt the supplied design kit to the React catalog. */
+.theme-card:has(.theme-card__description) h3,
+.theme-card:has(.theme-card__description) .theme-card__meta {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.theme-card__description {
+  font-size: 16px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.theme-card:has(.theme-card__description) .theme-card__downloads {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.theme-grid.is-list .theme-card__description {
+  grid-column: 2;
+}
+.theme-grid.is-list .theme-card:has(.theme-card__description) .theme-card__image-wrap,
+.theme-grid.is-list .theme-card:has(.theme-card__description) .theme-card__footer {
+  grid-row: 1 / 5;
+}
+@media (max-width: 780px) {
+  .theme-grid.is-list .theme-card:has(.theme-card__description) .theme-card__footer {
+    grid-row: 5;
+  }
+}
+.theme-details {
+  width: min(760px, 100%);
+  margin: auto;
+  padding: 24px;
+  overflow-wrap: anywhere;
+  font-size: 18px;
+}
+.theme-details dd { margin: 0 0 16px; }
+.theme-details dt { font-weight: bold; }
+.catalog-end { padding: 12px; }
 .masthead__nav button {
   border: 0;
   background: transparent;
@@ -69,6 +106,7 @@
 }
 .choice {
   align-items: flex-start;
+  overflow-wrap: anywhere;
 }
 .choice input {
   flex-shrink: 0;

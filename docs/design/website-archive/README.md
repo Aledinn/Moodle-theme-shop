@@ -45,11 +45,9 @@ The root URL uses the real Go API; sample records never enter the database and
 never replace API failures. The design preview is explicitly labeled, and its
 download actions explain that no real theme package is supplied.
 
-The chosen implementation is a single-page catalog with guidance/metadata
-dialogs. This follows the user's revised design direction; it does not fulfill
-issue #3's original requirement for separate detail and installation routes.
-The PR therefore references #3 without claiming to close it. Detail/download
-behavior, extension import and deployment remain later work.
+The implementation provides a paginated catalog with guidance/metadata dialogs
+and stable `/themes/{id}` metadata pages. Download and installation behavior,
+extension import and production deployment remain later work.
 
 The original ZIP also contained a duplicate static starter and reconstruction
 prompt. The retained reference, specification, portable tokens, working React

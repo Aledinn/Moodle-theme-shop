@@ -37,6 +37,22 @@
 }
 .theme-details dd { margin: 0 0 16px; }
 .theme-details dt { font-weight: bold; }
+.theme-details { line-height: 1.5; }
+.theme-details h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1.15;
+  margin: 16px 0;
+}
+.theme-details .details-eyebrow { margin-top: 32px; font-weight: bold; }
+.details-description { white-space: pre-wrap; }
+.theme-details .download-button { padding: 12px 20px; max-width: 100%; white-space: normal; font-size: 1rem; }
+.theme-details a, .info-dialog p a { text-decoration: underline; text-underline-offset: 3px; }
+.installation-guide { margin-top: 32px; padding-top: 16px; border-top: 2px solid var(--ink); }
+.installation-guide ol { padding-left: 24px; }
+.installation-guide li { margin-bottom: 16px; }
+.theme-details code { font-size: 0.9em; }
 .catalog-end { padding: 12px; }
 .masthead__nav button {
   border: 0;

@@ -41,7 +41,7 @@ with their OFL licenses in `public/design/fonts/`, so visiting the site does not
 require Google Fonts. Tokens are kept in `src/design-tokens.css`; the supplied
 starter styles and React integration refinements are separate stylesheets.
 
-Downloads and file import remain separate work in progress.
+Theme details provide portable JSON downloads. Extension file import remains separate work in progress (issue #6).
 
 ## Catalog navigation
 
@@ -93,6 +93,7 @@ npm test
 npm run build
 # Self-contained Chromium check with curated local API responses:
 npm run test:catalog
+npm run test:details
 # With the dev server and Go API running:
 npx playwright install chromium
 npm run test:smoke
@@ -119,3 +120,35 @@ Set `WEB_URL` to check a different dev port. Screenshots go to ignored `.cache/`
 on port 4173 for static inspection; it does not provide an API proxy. Production
 hosting must route `/api/*` to Go and other application routes to `index.html`.
 Deployment packaging and production fallback verification are separate tickets.
+
+## Theme details and downloads
+
+`/themes/{id}` displays metadata as plain text, including unverified author,
+release version and the exact supported hostname. Loading, missing themes and
+service failures have explicit states and retry. Percent-encoded IDs are decoded
+once for routing and encoded again for API requests, preserving string IDs.
+
+**Download theme JSON** fetches `/api/themes/{id}/download` through the same-origin
+API. The Go endpoint validates the portable contract and supplies a safe numeric
+`theme-{id}.json` attachment filename. The browser adapter requires that attachment
+header and JSON media type, bounds the stream to 256 KiB, and hands the original
+bytes to the browser only after receiving the complete response. It does not
+rebuild JSON from the metadata record. Failures offer retry; the handoff message
+asks visitors to confirm saving in their browser, since the page cannot prove it.
+
+Setup guidance links to extension build/load instructions and explains compatible
+hostname selection, file import and explicit target confirmation/application.
+It clearly labels import as unavailable in the current extension (issue #6),
+rather than suggesting a nonexistent control. Visitors can download without an
+account or extension. The page never probes extension state or sends extension
+messages.
+
+`npm run test:details` starts Vite and a controlled HTTP upstream, checks the actual
+same-origin proxy and browser download against the shared valid editor export,
+and covers direct details navigation/refresh, keyboard activation, mobile widths,
+literal hostile text, missing themes, server failures and retry. Unit tests also
+preserve every valid shared portable fixture byte-for-byte and check bounded
+streaming, unsafe attachment filenames, cancellation, duplicate clicks, failed
+streams and failed browser handoff. The server remains responsible for contract
+validation; passing these tests does not verify a real Moodle import/application.
+Production API routing and SPA fallback verification remain packaging work.

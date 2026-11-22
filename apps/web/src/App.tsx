@@ -13,7 +13,13 @@ import type { Filters } from "./catalog";
 
 export function App() {
   const match = /^\/themes\/([^/]+)\/?$/.exec(window.location.pathname);
-  return match ? <ThemeDetails id={match[1]} /> : <CatalogApp />;
+  if (!match) return <CatalogApp />;
+  try {
+    const id = decodeURIComponent(match[1]);
+    return <ThemeDetails key={id} id={id} />;
+  } catch {
+    return <main className="theme-details"><h1>Invalid theme URL</h1><a href="/">Back to theme catalog</a></main>;
+  }
 }
 
 function Icon({ name, className = "" }: { name: string; className?: string }) {
@@ -162,7 +168,8 @@ export function CatalogApp() {
             <code>chrome://extensions</code>.
           </p>
           <p>
-            Theme downloads and JSON file import are separate work in progress.
+            Open a theme’s details page to download its JSON file and read setup
+            instructions. JSON file import in the extension is still in development.
             Always check the supported hostname before applying a theme.
           </p>
         </>
@@ -554,8 +561,7 @@ export function CatalogApp() {
                                   Supported site: {theme.institution}.
                                 </p>
                                 <p>
-                                  The complete download and import flow is still
-                                  in development.
+                                  <a href={`/themes/${encodeURIComponent(theme.id)}`}>Download JSON and read installation guidance</a>
                                 </p>
                               </>
                             ),

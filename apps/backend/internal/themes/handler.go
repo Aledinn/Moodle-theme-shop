@@ -4,9 +4,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"strings"
+
+	"moodle-theme-shop-backend/internal/themecontract"
 )
 
 type Handler struct {
@@ -68,23 +71,26 @@ func (h *Handler) HandleThemeByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) postTheme(w http.ResponseWriter, r *http.Request) {
+	// Bound the entire stream, including trailing whitespace/JSON, before parsing.
+	r.Body = http.MaxBytesReader(w, r.Body, themecontract.MaxBytes)
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			http.Error(w, "theme exceeds 256 KiB", http.StatusRequestEntityTooLarge)
+		} else {
+			http.Error(w, "unable to read theme body", http.StatusBadRequest)
+		}
+		return
+	}
+	if err := themecontract.ValidatePortable(data); err != nil {
+		http.Error(w, "invalid theme: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 	var theme Theme
-
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
-
-	if err := decoder.Decode(&theme); err != nil {
-		http.Error(w, "invalid body", http.StatusBadRequest)
+	if err := json.Unmarshal(data, &theme); err != nil {
+		http.Error(w, "invalid theme body", http.StatusBadRequest)
 		return
-	}
-
-	if theme.Name == "" || theme.Site == "" || theme.Author == "" {
-		http.Error(w, "name, site and author are required", http.StatusBadRequest)
-		return
-	}
-
-	if theme.Version == "" {
-		theme.Version = "1.0"
 	}
 
 	created, err := h.store.Create(r.Context(), theme)

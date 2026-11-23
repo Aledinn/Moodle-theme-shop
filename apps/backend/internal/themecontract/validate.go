@@ -1,5 +1,5 @@
 // Package themecontract checks the shared portable/API schemas independently
-// of HTTP and storage. The download handler uses ValidatePortable before sending.
+// of HTTP and storage. Upload and download handlers use ValidatePortable.
 package themecontract
 
 import (

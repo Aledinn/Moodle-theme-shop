@@ -157,6 +157,15 @@ async function uploadThemeToShop(){
     await fetch(`${API_BASE_URL}/themes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(theme)
+        // Installed API records can retain an id or other internal fields.
+        // Upload only the portable fields; keep the stored record untouched.
+        body: JSON.stringify({
+            name: theme.name,
+            site: theme.site,
+            author: theme.author,
+            description: theme.description,
+            version: theme.version,
+            rules: theme.rules
+        })
     });
 }

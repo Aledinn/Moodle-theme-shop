@@ -6,8 +6,9 @@ rules below, and `fixtures/manifest.json` are normative together. The schema alo
 cannot enforce file size, duplicate JSON keys, or browser CSS parsing.
 
 The website download endpoint validates its explicit portable projection before
-sending it. Legacy uploads and extension installation paths retain their existing
-behavior and are not wired to these checks. Accounts, publication state,
+sending it. `POST /themes` bounds the request body and validates the complete
+portable object before writing to the database. Extension installation paths
+retain their existing behavior and are not wired to these checks. Accounts, publication state,
 moderation, and UI are separate work.
 
 ## Portable object

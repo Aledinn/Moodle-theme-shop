@@ -1,5 +1,15 @@
 # Backend API
 
+`POST /themes` accepts the six-field [portable theme object](../../contracts/theme/README.md).
+The complete request is limited to 262,144 bytes (including trailing whitespace),
+even when streamed without a Content-Length. Oversized bodies return 413;
+malformed/trailing JSON, duplicate or unknown fields, invalid metadata/hostnames,
+and unsupported rules/CSS return 400 with a plain-text error. Validation completes
+before any insert. All fields are required, including `description` and `version`;
+the server no longer defaults empty versions. Valid editor exports keep their
+values and rule order, and success still returns 201 with the created theme and
+its string `id`. This validation adds no accounts or moderation controls.
+
 Website routes:
 
 - `GET /api/themes?limit=20&cursor=...` returns metadata as

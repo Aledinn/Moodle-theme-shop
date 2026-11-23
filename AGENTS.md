@@ -40,8 +40,9 @@ separately. GitHub Actions runs CI; local scratch scripts are not required CI.
 - Contract revision 1 limits imports to 256 KiB and 500 rules and allows a small
   CSS subset. Reject unsupported input without silently rewriting it. Preserve
   the recorded valid export and use the shared manifest for both languages.
-- Contract validators exist, but production upload/import integration is separate
-  work. Do not describe checks as enforced in a consumer without tracing its code.
+- Upload and download handlers enforce the portable contract; extension import
+  integration is separate work. Do not describe checks as enforced in a consumer
+  without tracing its code.
 - Render untrusted metadata as text. For import changes, validate the whole
   candidate before replacing storage or applying CSS; keep site targeting explicit.
 - Accounts and moderation are separate tasks. Do not add them incidentally.

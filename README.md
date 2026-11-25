@@ -88,6 +88,15 @@ using a local Moodle-like fixture; it never injects into university servers.
 
 ## Standalone website
 
+For a complete local website/API/database stack at **http://127.0.0.1:8090**:
+
+```bash
+docker compose -f compose.local.yml up --build --wait --wait-timeout 180
+```
+
+See [local container setup](docs/local-containers.md) for isolated data, settings,
+logs, stopping and verification. This runs alongside the original backend setup.
+
 The React website is built independently of the extension:
 
 ```bash

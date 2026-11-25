@@ -42,7 +42,7 @@ it("shows loading, literal metadata, and honest installation guidance without pr
   expect(screen.getByRole("heading", { name: theme.name })).toBeTruthy();
   for (const text of [theme.author, theme.description, theme.version]) expect(screen.getByText(text)).toBeTruthy();
   expect(container.querySelector("img, script, svg, b")).toBeNull();
-  expect(screen.getByText(/JSON file import is not available/)).toBeTruthy();
+  expect(screen.getAllByText("Import downloaded JSON")[0]).toBeTruthy();
   expect(screen.getByText(/hostname must exactly match/).textContent).toContain(theme.site);
   expect(screen.getByRole("link", { name: "extension setup instructions" }).getAttribute("href")).toContain("#installation");
   expect(fetch).toHaveBeenCalledTimes(1);

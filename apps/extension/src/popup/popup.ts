@@ -1,6 +1,8 @@
+import { SHOP_URL } from "../shared/config";
+
 const buttonOpenEditor = document.getElementById("open_editor") as HTMLButtonElement;
 const buttonToggleTheme = document.getElementById("toggle_theme") as HTMLButtonElement;
-const buttonInstallTheme = document.getElementById("install_theme") as HTMLButtonElement;
+const buttonBrowseThemes = document.getElementById("browse_themes") as HTMLButtonElement;
 const buttonExportTheme = document.getElementById("export_theme") as HTMLButtonElement;
 const buttonUploadTheme = document.getElementById("upload_theme") as HTMLButtonElement;
 const buttonImportTheme = document.getElementById("import_theme") as HTMLButtonElement;
@@ -25,11 +27,10 @@ buttonExportTheme.addEventListener("click", () => {
     chrome.runtime.sendMessage({ type: "export_json"})
 });
 
-buttonInstallTheme.addEventListener("click", () => {
-    window.location.href = chrome.runtime.getURL("shop/shop.html");
+buttonBrowseThemes.addEventListener("click", async () => {
+    await chrome.tabs.create({ url: SHOP_URL });
 });
 
 buttonUploadTheme.addEventListener("click", () =>{
     chrome.runtime.sendMessage({ type: "upload_theme"})
 })
-

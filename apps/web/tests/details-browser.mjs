@@ -43,7 +43,7 @@ try {
   await page.reload();
   await page.getByRole("heading", { name: hostile, exact: true }).waitFor();
   assert.equal(await page.locator('img[src="x"], script:not([type="module"])').count(), 0);
-  assert.ok(await page.getByText("JSON file import is not available", { exact: false }).isVisible());
+  assert.ok(await page.getByText("Import downloaded JSON", { exact: false }).first().isVisible());
   for (const width of [320, 375, 780, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `details fit ${width}px`);

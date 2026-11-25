@@ -37,8 +37,10 @@ HTTP status. Invalid limits/cursors return 400; unsupported methods return 405
 with `Allow: GET`; database failures return 500 without database details.
 Repeated pagination parameters and empty cursors are rejected.
 
-The extension continues using `GET /themes` (a bare metadata array),
-`GET /themes/{id}` (a theme record), and the existing development `POST /themes`.
+The extension retains the development `POST /themes` upload, configured by
+`VITE_API_BASE_URL`. Browsing and downloads now use the standalone website;
+the embedded shop and direct extension installer have been retired. The legacy
+`GET /themes` and `GET /themes/{id}` endpoints remain available for compatibility.
 Malformed IDs on legacy detail requests also return 400. This does not introduce
 publication controls: use curated fixtures locally; the development upload is
 not a public publication API.
@@ -66,9 +68,8 @@ The backend embeds a deployment copy of `contracts/theme/portable.schema.json`
 at `internal/themecontract/portable.schema.json`; a test requires byte equality.
 When revising the shared schema, update that copy and run both contract suites.
 
-To verify the existing extension against a running backend with curated sample
-content at `http://localhost:8080`, run `npm run build` and then
-`npm run test:legacy` in `apps/extension`. The smoke check runs the actual
-extension in Chromium against a controlled local page and confirms that browse,
-install, local storage and CSS application still use the legacy routes. It is
-not a real Moodle or toolbar-popup check.
+To verify the website-to-extension migration, install dependencies in both apps
+and run `npm run test:extension` in `apps/web`. It uses a controlled API and a
+Moodle-like fixture, with the actual website and unpacked extension. The separate
+website `npm run test:smoke` check requires the Go API and Vite running. Neither
+check establishes compatibility with a real Moodle deployment.

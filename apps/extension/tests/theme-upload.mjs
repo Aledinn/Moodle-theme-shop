@@ -50,6 +50,7 @@ for (const installedFromShop of [false, true]) {
             runtime: { onMessage: { addListener(listener) { onMessage = listener; } } },
             tabs: {
                 onUpdated: { addListener() {} },
+                onRemoved: { addListener() {} },
                 async query() { return [{ id: 7, url: `https://${portable.site}/course` }]; },
             },
             storage: { local: {

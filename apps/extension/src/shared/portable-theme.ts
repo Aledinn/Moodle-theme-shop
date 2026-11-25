@@ -1,15 +1,11 @@
-import Ajv from "ajv";
-import portableSchema from "../../../../contracts/theme/portable.schema.json";
-import summarySchema from "../../../../contracts/theme/api-summary.schema.json";
+import { portable, api } from "../generated/theme-schemas";
+import type { ValidateFunction } from "ajv";
 
 export const MAX_THEME_BYTES = 256 * 1024;
 
-const ajv = new Ajv({ allErrors: true, strict: true });
 // No coercion, defaults, removal of unknown fields, or CSS serialization.
-const schemas = {
-    portable: ajv.compile(portableSchema),
-    api: ajv.compile(summarySchema),
-};
+type StandaloneValidator = ((value: unknown) => boolean) & Pick<ValidateFunction, "errors">;
+const schemas: Record<"portable" | "api", StandaloneValidator> = { portable, api };
 
 /** Contract check only. Call before storing, rendering, or applying imported data. */
 export function validateThemeBytes(
@@ -23,7 +19,7 @@ export function validateThemeBytes(
     const value: unknown = JSON.parse(source);
     checkUniqueKeys(source);
     const validate = schemas[kind];
-    if (!validate(value)) throw new Error(ajv.errorsText(validate.errors));
+    if (!validate(value)) throw new Error(validate.errors?.map(error => `${error.instancePath || "/"} ${error.message}`).join("; ") ?? "Invalid theme");
     if (kind === "portable" && browser) {
         for (const rule of (value as { rules: { selector: string; properties: Record<string, string> }[] }).rules) {
             // Matching an element is not required; parsing every selector is.

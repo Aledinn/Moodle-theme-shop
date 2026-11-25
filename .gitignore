@@ -3,3 +3,5 @@ node_modules
 dist
 .env
 /private_context.md
+# Build-time portable validators (MV3-safe Ajv standalone output).
+apps/extension/src/generated/

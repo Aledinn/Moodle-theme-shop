@@ -3,7 +3,8 @@ import { getThemeForSite, Theme } from "./theme-storage";
 import { getDomainFromUrl, isInScope, markDomainAsApplied } from "./utils";
 
 let appliedDomains: string[] = [];
-let activeInjectedCss = "";
+const activeInjectedCss = new Map<number, string>();
+chrome.tabs.onRemoved.addListener(tabId => activeInjectedCss.delete(tabId));
 
 export async function reapplyThemeIfEnabled(tab: chrome.tabs.Tab) {
     if (!tab.url) {
@@ -21,8 +22,8 @@ export async function reapplyThemeIfEnabled(tab: chrome.tabs.Tab) {
     }
 
     const css = themeToCss(theme);
-    activeInjectedCss = css;
     await insertCss(tab, css);
+    activeInjectedCss.set(tab.id!, css);
 }
 
 export async function toggleThemeForTab(tab: chrome.tabs.Tab, domain: string) {
@@ -44,23 +45,23 @@ export async function toggleThemeForTab(tab: chrome.tabs.Tab, domain: string) {
     await applyCssToTab(tab, domain, css);
 }
 
-export async function applyThemeToTab(tab: chrome.tabs.Tab, domain: string, theme: Theme) {
-    await applyCssToTab(tab, domain, themeToCss(theme));
+export async function applyThemeToTab(tab: chrome.tabs.Tab, domain: string, theme: Theme, documentId?: string) {
+    await applyCssToTab(tab, domain, themeToCss(theme), documentId);
 }
 
-export async function replaceThemeCssInTab(tab: chrome.tabs.Tab, domain: string, theme: Theme) {
-    await removeCurrentCssFromTab(tab, domain);
+export async function replaceThemeCssInTab(tab: chrome.tabs.Tab, domain: string, theme: Theme, documentId?: string) {
+    await removeCurrentCssFromTab(tab, domain, documentId);
 
-    await applyThemeToTab(tab, domain, theme);
+    await applyThemeToTab(tab, domain, theme, documentId);
 }
 
-async function applyCssToTab(tab: chrome.tabs.Tab, domain: string, css: string) {
+async function applyCssToTab(tab: chrome.tabs.Tab, domain: string, css: string, documentId?: string) {
     if (!css) {
         return;
     }
 
-    await insertCss(tab, css);
-    activeInjectedCss = css;
+    await insertCss(tab, css, documentId);
+    activeInjectedCss.set(tab.id!, css);
     markDomainAsApplied(domain, appliedDomains);
 }
 
@@ -69,10 +70,11 @@ async function removeThemeFromTab(tab: chrome.tabs.Tab, domain: string) {
     appliedDomains = appliedDomains.filter((appliedDomain) => appliedDomain !== domain);
 }
 
-async function removeCurrentCssFromTab(tab: chrome.tabs.Tab, domain: string) {
-    if (activeInjectedCss) {
-        await removeCss(tab, activeInjectedCss);
-        activeInjectedCss = "";
+async function removeCurrentCssFromTab(tab: chrome.tabs.Tab, domain: string, documentId?: string) {
+    const activeCss = activeInjectedCss.get(tab.id!);
+    if (activeCss) {
+        await removeCss(tab, activeCss, documentId);
+        activeInjectedCss.delete(tab.id!);
         return;
     }
 
@@ -80,6 +82,6 @@ async function removeCurrentCssFromTab(tab: chrome.tabs.Tab, domain: string) {
     const storedCss = storedTheme ? themeToCss(storedTheme) : "";
 
     if (storedCss) {
-        await removeCss(tab, storedCss);
+        await removeCss(tab, storedCss, documentId);
     }
 }

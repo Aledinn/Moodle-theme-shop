@@ -7,8 +7,10 @@ cannot enforce file size, duplicate JSON keys, or browser CSS parsing.
 
 The website download endpoint validates its explicit portable projection before
 sending it. `POST /themes` bounds the request body and validates the complete
-portable object before writing to the database. Extension installation paths
-retain their existing behavior and are not wired to these checks. Accounts, publication state,
+portable object before writing to the database. Extension JSON import validates
+bounded files before preview and revalidates before applying to its captured
+Moodle document. Legacy shop installation retains its existing behavior and is
+not wired to these checks. Accounts, publication state,
 moderation, and UI are separate work.
 
 ## Portable object

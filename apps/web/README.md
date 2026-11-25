@@ -121,7 +121,9 @@ Set `WEB_URL` to check a different dev port. Screenshots go to ignored `.cache/`
 `npm run build` writes static assets to `dist/`. `npm run preview` serves them
 on port 4173 for static inspection; it does not provide an API proxy. Production
 hosting must route `/api/*` to Go and other application routes to `index.html`.
-Deployment packaging and production fallback verification are separate tickets.
+The [local container setup](../../docs/local-containers.md) packages the built
+website and API behind Nginx at one loopback origin. `npm run test:containers`
+checks the actual images with a fresh isolated database and browser download.
 
 ## Theme details and downloads
 
@@ -152,7 +154,7 @@ preserve every valid shared portable fixture byte-for-byte and check bounded
 streaming, unsafe attachment filenames, cancellation, duplicate clicks, failed
 streams and failed browser handoff. The server remains responsible for contract
 validation; passing these tests does not verify a real Moodle import/application.
-Production API routing and SPA fallback verification remain packaging work.
+The container check separately verifies API routing and navigation fallback.
 
 `test:extension` builds and loads the unpacked extension in Chromium, opens this
 website from its popup, browses a controlled API record, downloads its actual

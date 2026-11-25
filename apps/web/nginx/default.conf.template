@@ -1,0 +1,38 @@
+map "$request_method:$http_accept" $website_navigation {
+    default 0;
+    ~*^(GET|HEAD):.*text/html 1;
+}
+
+upstream theme_api {
+    zone theme_api 64k;
+    # Docker's internal DNS also handles an API container being recreated.
+    resolver 127.0.0.11 valid=5s ipv6=off;
+    server ${WEB_API_UPSTREAM} resolve;
+}
+
+server {
+    listen 8080;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+    proxy_connect_timeout 2s;
+    proxy_read_timeout 15s;
+
+    location = /api {
+        proxy_pass http://theme_api;
+    }
+    location ^~ /api/ {
+        # No URI suffix or rewrite: preserve /api and the query string.
+        proxy_pass http://theme_api;
+    }
+
+    # Asset misses must remain 404, even with a browser navigation Accept header.
+    location /assets/ { try_files $uri =404; }
+    location /design/ { try_files $uri =404; }
+    location ~ \. { try_files $uri =404; }
+    location / { try_files $uri $uri/ @website; }
+    location @website {
+        if ($website_navigation = 0) { return 404; }
+        try_files /index.html =404;
+    }
+}

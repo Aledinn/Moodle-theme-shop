@@ -80,12 +80,12 @@ export function ThemeDetails({ id }: { id: string }) {
           <section className="installation-guide" aria-labelledby="installation-heading">
             <h2 id="installation-heading">Use this theme in your browser</h2>
             <p>The extension applies themes locally in your browser. It does not change the Moodle site for other visitors.</p>
-            <p><strong>JSON file import is not available in the current extension yet.</strong> You can download and keep this file now. The import and target selection workflow is being developed; the steps below apply to an import-enabled release.</p>
+            <p>After saving the JSON file, return to the intended Moodle tab and open the extension popup. Choose <strong>Import downloaded JSON</strong>, review the target and theme, then confirm import and apply.</p>
             <ol>
               <li><strong>Load the extension.</strong> Follow the <a href="https://github.com/Aledinn/Moodle-theme-shop#installation">extension setup instructions</a> to build it. In Chrome, open <code>chrome://extensions</code>, turn on Developer mode, choose <strong>Load unpacked</strong>, and select the built <code>apps/extension/dist</code> folder.</li>
               <li><strong>Open a compatible Moodle tab.</strong> Its hostname must exactly match <strong>{state.data.site}</strong>. A different subdomain is a different target.</li>
-              <li><strong>Import the downloaded JSON.</strong> In an import-enabled extension, choose the downloaded <code>.json</code> file. Review its name, version and supported hostname before continuing.</li>
-              <li><strong>Select and confirm the target.</strong> Explicitly select the compatible Moodle tab, then confirm import and apply. Keep that tab open on the same hostname. Do not target this marketplace or the extension page.</li>
+              <li><strong>Import the downloaded JSON.</strong> Open the popup from that Moodle tab, choose <strong>Import downloaded JSON</strong>, and select the downloaded <code>.json</code> file. Review its name, version and supported hostname before continuing.</li>
+              <li><strong>Confirm the captured target.</strong> Check the displayed Moodle tab, then confirm import and apply. Keep that tab on the same page; navigation or reload requires reopening import. Do not target this marketplace or the extension page.</li>
               <li><strong>Check the Moodle tab.</strong> Confirm the theme appears there. If import or application fails, check the file, hostname and extension permissions before retrying.</li>
             </ol>
             <h3>Don’t have the extension?</h3>

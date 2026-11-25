@@ -1,4 +1,5 @@
 import schema from "../../../../contracts/theme/portable.schema.json";
+import { isThemeTarget } from "../shared/config";
 import { MAX_THEME_BYTES, validateThemeBytes } from "../shared/portable-theme";
 import type { ImportTarget } from "../shared/messages";
 import { replaceThemeCssInTab } from "./theme-application";
@@ -8,7 +9,7 @@ import { upsertThemeForSite, type Theme } from "./theme-storage";
 function hostname(url: string): string {
     const parsed = new URL(url);
     const site = parsed.hostname.toLowerCase().replace(/\.$/, "");
-    if (!/^https?:$/.test(parsed.protocol) || site.length > schema.properties.site.maxLength
+    if (!isThemeTarget(url) || site.length > schema.properties.site.maxLength
         || !new RegExp(schema.properties.site.pattern).test(site)) {
         throw new Error("Choose a supported HTTP(S) Moodle tab before importing.");
     }

@@ -28,6 +28,43 @@ Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, 
 
 The backend API will be available at `http://localhost:8080`.
 
+The popup's **Browse themes on website** opens the standalone catalog in a normal
+browser tab. Start the website as described below, browse and download a theme,
+then return to the intended Moodle tab before opening **Import downloaded JSON**.
+The embedded shop and its direct-install message have been retired.
+
+### Extension build URLs
+
+The extension reads two independent public build inputs from the environment or
+Vite `.env.local` / `.env.production.local` files in `apps/extension`:
+
+| Setting | Default | Purpose |
+| --- | --- | --- |
+| `VITE_SHOP_URL` | `http://127.0.0.1:5173` | Website opened by the popup; paths such as `/archive/` are supported |
+| `VITE_API_BASE_URL` | `http://localhost:8080` | API base for the retained development upload (`POST /themes`) |
+
+For example, from `apps/extension` in PowerShell:
+
+```powershell
+$env:VITE_SHOP_URL = 'https://themes.example.org/'
+$env:VITE_API_BASE_URL = 'https://api.example.org'
+npm.cmd run build
+```
+
+Use your own deployed hosts. URLs must use HTTPS, with HTTP allowed only for
+`localhost`, `127.0.0.1`, or `[::1]`. Credentials, query strings and fragments are
+rejected at build time. Both development and production modes support these
+settings; production also defaults to local services until configured. Rebuild
+and reload the unpacked extension after changing them. These values contain no
+secrets. Website `/api` routing and its server-side `WEB_API_TARGET` remain
+separate from both extension settings.
+
+The configured shop origin and extension pages cannot be import/application
+targets, even if they expose Moodle markers. Import uses the captured Moodle
+tab and explicit confirmation; the website never messages the extension.
+**Upload theme (development)** remains available against the separately configured
+API. Public uploading awaits accounts and moderation.
+
 ## Import a downloaded theme
 
 Open the intended Moodle page, open the extension popup, and choose **Import
@@ -60,9 +97,7 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:5173`. Browser requests use same-origin `/api` URLs;
-Vite forwards them to port 8080 by default. The live catalog requires the
-website API from issue #2 / PR #17, which must land before this web foundation
-can run against the default branch's backend. The explicitly labeled
+Vite forwards them to port 8080 by default. The explicitly labeled
 `/?preview=design` view uses only the supplied illustrative design samples.
 
 See the [web setup and checks](apps/web/README.md) and

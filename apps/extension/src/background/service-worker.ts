@@ -4,8 +4,7 @@ import {
     toggleThemeForTab
 } from "./theme-application";
 import { selectThemeRule, setActiveEditingTheme, updateSelectedThemeStyle } from "./theme-editor";
-import { loadThemeFromBackend } from "./theme-loader";
-import { initializeStorage, upsertThemeForSite, getThemeForSite } from "./theme-storage";
+import { initializeStorage, getThemeForSite } from "./theme-storage";
 import { getCurrentTab, getCurrentTabContext } from "./utils";
 import type { ExtensionMessage } from "../shared/messages";
 import {API_BASE_URL} from "../shared/config"
@@ -59,10 +58,6 @@ async function handleMessage(message: ExtensionMessage) {
 
         case "update_selected_style":
             await handleUpdateSelectedStyle(message);
-            return;
-
-        case "install_theme":
-            await handleInstallTheme(message.id);
             return;
 
         case "export_json":
@@ -131,20 +126,6 @@ async function handleUpdateSelectedStyle(message: Extract<ExtensionMessage, { ty
     }
 
     await replaceThemeCssInTab(context.tab, context.domain, updatedTheme);
-}
-
-async function handleInstallTheme(id:string) {
-    const context = await getCurrentTabContext();
-    if (!context) {
-        return;
-    }
-
-    const theme = await loadThemeFromBackend(id);
-    theme.site = context.domain;
-
-    await upsertThemeForSite(theme);
-    setActiveEditingTheme(theme);
-    await replaceThemeCssInTab(context.tab, context.domain, theme);
 }
 
 async function exportThemeToJson(){

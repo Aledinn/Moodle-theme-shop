@@ -8,8 +8,7 @@
     "pretest": "node scripts/generate-theme-schemas.mjs",
     "pretypecheck": "node scripts/generate-theme-schemas.mjs",
     "prebuild": "node scripts/generate-theme-schemas.mjs",
-    "test": "node tests/theme-contract.mjs && node tests/theme-upload.mjs && node tests/theme-import.mjs",
-    "test:legacy": "node tests/legacy-shop.mjs",
+    "test": "node tests/build-config.mjs && node tests/theme-contract.mjs && node tests/theme-upload.mjs && node tests/application-target.mjs && node tests/theme-import.mjs",
     "typecheck": "tsc --noEmit",
     "build": "vite build"
   },

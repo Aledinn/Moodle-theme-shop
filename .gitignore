@@ -2,6 +2,7 @@
 node_modules
 dist
 .env
+.env*.local
 /private_context.md
 # Build-time portable validators (MV3-safe Ajv standalone output).
 apps/extension/src/generated/

@@ -1,3 +1,5 @@
+import { isThemeTarget } from "../shared/config";
+
 export async function getCurrentTab() {
     const queryOptions = { active: true, lastFocusedWindow: true };
     const [tab] = await chrome.tabs.query(queryOptions);
@@ -11,7 +13,7 @@ export function isInScope(url: string, list: string[]) {
 export function getDomainFromUrl(url: string): string | null {
     try {
         const parsedUrl = new URL(url);
-        return /^https?:$/.test(parsedUrl.protocol) ? parsedUrl.hostname.toLowerCase().replace(/\.$/, "") : null;
+        return isThemeTarget(url) ? parsedUrl.hostname.toLowerCase().replace(/\.$/, "") : null;
     } catch (error) {
         console.error("Invalid URL:", url);
         return null;

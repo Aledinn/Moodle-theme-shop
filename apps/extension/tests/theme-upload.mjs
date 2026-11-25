@@ -12,15 +12,18 @@ const contract = resolve(app, '../../contracts/theme');
 const portable = JSON.parse(await readFile(resolve(contract, 'fixtures/valid/editor-export.json'), 'utf8'));
 portable.rules.push({ selector: portable.rules[0].selector, properties: { color: '#abcdef' } });
 const validate = new Ajv().compile(JSON.parse(await readFile(resolve(contract, 'portable.schema.json'), 'utf8')));
+process.env.VITE_API_BASE_URL = "https://uploads.example.org";
 const bundle = await build({
-    configFile: false,
+    configFile: resolve(app, "vite.config.ts"),
     logLevel: 'error',
     build: {
+        rollupOptions: { input: resolve(app, 'src/background/service-worker.ts') },
         write: false,
         lib: { entry: resolve(app, 'src/background/service-worker.ts'), name: 'ThemeWorker', formats: ['iife'] },
         minify: false,
     },
 });
+delete process.env.VITE_API_BASE_URL;
 const code = (Array.isArray(bundle) ? bundle[0] : bundle).output.find(output => output.type === 'chunk').code;
 
 async function waitFor(predicate) {
@@ -31,11 +34,11 @@ async function waitFor(predicate) {
     }
 }
 
-// Exercise the actual install/edit/upload message handlers with Chrome and HTTP
+// Exercise the actual edit/upload message handlers with Chrome and HTTP
 // boundaries mocked. Storage clones values as chrome.storage does in the browser.
 for (const installedFromShop of [false, true]) {
     const apiTheme = { ...structuredClone(portable), id: '9007199254740993', internal: 'do not upload' };
-    let storage = { installedThemes: { themesBySite: installedFromShop ? {} : { [portable.site]: structuredClone(portable) } } };
+    let storage = { installedThemes: { themesBySite: { [portable.site]: structuredClone(installedFromShop ? apiTheme : portable) } } };
     let onMessage;
     let applications = 0;
     let selectionComplete = false;
@@ -58,6 +61,7 @@ for (const installedFromShop of [false, true]) {
                 async set(value) { storage = structuredClone(value); },
             } },
             scripting: {
+                async executeScript() { return [{ result: `https://${portable.site}/course`, documentId: 'moodle-document' }]; },
                 async insertCSS() { applications++; },
                 async removeCSS() {},
             },
@@ -71,11 +75,6 @@ for (const installedFromShop of [false, true]) {
             return { ok: true, status: 201 };
         },
     });
-    if (installedFromShop) {
-        onMessage({ type: 'install_theme', id: apiTheme.id });
-        await waitFor(() => applications === 1);
-        assert.equal(storage.installedThemes.themesBySite[portable.site].id, apiTheme.id);
-    }
     const selector = portable.rules[0].selector;
     onMessage({ type: 'chosen_element', selector });
     await waitFor(() => selectionComplete);
@@ -92,7 +91,7 @@ for (const installedFromShop of [false, true]) {
     assert.deepEqual(uploaded, expected, 'upload must preserve all six fields and edited rule order');
     assert.equal(validate(uploaded), true, JSON.stringify(validate.errors));
     assert.equal(request.method, 'POST');
-    assert.ok(request.url.endsWith('/themes'));
+    assert.equal(request.url, 'https://uploads.example.org/themes');
     assert.equal(request.headers['Content-Type'], 'application/json');
     assert.deepEqual(storage, beforeUpload, 'upload must not remove internal fields from installed storage');
 }

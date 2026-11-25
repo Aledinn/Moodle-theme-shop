@@ -41,7 +41,7 @@ with their OFL licenses in `public/design/fonts/`, so visiting the site does not
 require Google Fonts. Tokens are kept in `src/design-tokens.css`; the supplied
 starter styles and React integration refinements are separate stylesheets.
 
-Theme details provide portable JSON downloads. Extension file import remains separate work in progress (issue #6).
+Theme details provide portable JSON downloads. Return to the intended Moodle tab and choose **Import downloaded JSON** in the extension popup.
 
 ## Catalog navigation
 
@@ -94,6 +94,8 @@ npm run build
 # Self-contained Chromium check with curated local API responses:
 npm run test:catalog
 npm run test:details
+# Cross-app migration check; install extension dependencies first:
+npm run test:extension
 # With the dev server and Go API running:
 npx playwright install chromium
 npm run test:smoke
@@ -138,8 +140,7 @@ asks visitors to confirm saving in their browser, since the page cannot prove it
 
 Setup guidance links to extension build/load instructions and explains compatible
 hostname selection, file import and explicit target confirmation/application.
-It clearly labels import as unavailable in the current extension (issue #6),
-rather than suggesting a nonexistent control. Visitors can download without an
+The popup opens the website in a normal tab; return to Moodle before importing. Visitors can download without an
 account or extension. The page never probes extension state or sends extension
 messages.
 
@@ -152,3 +153,10 @@ streaming, unsafe attachment filenames, cancellation, duplicate clicks, failed
 streams and failed browser handoff. The server remains responsible for contract
 validation; passing these tests does not verify a real Moodle import/application.
 Production API routing and SPA fallback verification remain packaging work.
+
+`test:extension` builds and loads the unpacked extension in Chromium, opens this
+website from its popup, browses a controlled API record, downloads its actual
+JSON, returns to a Moodle fixture and imports/applies it. It checks development
+and HTTPS production shop URLs, rejects shop/extension import targets, and verifies
+that toggle/reload cannot style the shop. It requires `npm ci` in both apps and
+the Playwright Chromium installation. It uses no live Moodle server or database.

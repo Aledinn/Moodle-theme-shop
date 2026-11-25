@@ -28,6 +28,27 @@ Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, 
 
 The backend API will be available at `http://localhost:8080`.
 
+## Import a downloaded theme
+
+Open the intended Moodle page, open the extension popup, and choose **Import
+downloaded JSON**. Keep that Moodle tab on the same page while selecting a file.
+The import page retains its tab and document identity even if you switch to the
+shop or another tab. Review the metadata and supported hostname, then choose
+**Confirm import and apply to target** to replace that site's saved theme.
+
+Imports accept the [portable contract](contracts/theme/README.md), including
+valid legacy editor exports, up to 256 KiB and 500 rules. The hostname must match
+exactly; import never rewrites it. Target pages must expose Moodle metadata
+(`keywords`/`generator`) or the Moodle `page-*` body and `#page #page-content`
+structure. Closed, navigated, reloaded, unsupported and incompatible targets
+require reopening import from the intended Moodle tab. Validation failures leave
+saved themes untouched. No additional extension permissions are needed.
+
+Extension `npm ci`, typecheck, test and build commands generate static schema
+validators from the shared schemas. This avoids runtime code generation, which
+Chrome Manifest V3 forbids. `npm test` includes a real unpacked-extension check
+using a local Moodle-like fixture; it never injects into university servers.
+
 ## Standalone website
 
 The React website is built independently of the extension:

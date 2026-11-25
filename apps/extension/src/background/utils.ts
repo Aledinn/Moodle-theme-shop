@@ -5,13 +5,13 @@ export async function getCurrentTab() {
 }
 
 export function isInScope(url: string, list: string[]) {
-    return list.some((presentUrl) => url.startsWith(presentUrl));
+    return list.includes(url);
 }
 
 export function getDomainFromUrl(url: string): string | null {
     try {
         const parsedUrl = new URL(url);
-        return parsedUrl.hostname;
+        return /^https?:$/.test(parsedUrl.protocol) ? parsedUrl.hostname.toLowerCase().replace(/\.$/, "") : null;
     } catch (error) {
         console.error("Invalid URL:", url);
         return null;

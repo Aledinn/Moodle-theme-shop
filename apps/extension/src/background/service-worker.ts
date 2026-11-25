@@ -9,6 +9,7 @@ import { initializeStorage, upsertThemeForSite, getThemeForSite } from "./theme-
 import { getCurrentTab, getCurrentTabContext } from "./utils";
 import type { ExtensionMessage } from "../shared/messages";
 import {API_BASE_URL} from "../shared/config"
+import { captureImportTarget, importTheme } from "./theme-import";
 
 initializeStorage();
 
@@ -20,8 +21,22 @@ chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
     await reapplyThemeIfEnabled(tab);
 });
 
-chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
-    handleMessage(message);
+chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
+    if (message.type === "capture_import_target" || message.type === "import_theme") {
+        // Only our import page can invoke this flow; content scripts cannot turn
+        // a website into an import controller.
+        if (sender.id !== chrome.runtime.id || !sender.url?.startsWith(chrome.runtime.getURL("import/import.html?"))) {
+            sendResponse({ ok: false, error: "Open the extension import page first." });
+            return false;
+        }
+        const operation = message.type === "capture_import_target"
+            ? captureImportTarget(message.tabId, message.url).then(target => ({ ok: true, target }))
+            : importTheme(message.target, message.source).then(() => ({ ok: true }));
+        operation.then(sendResponse, error => sendResponse({ ok: false, error: String(error) }));
+        return true;
+    }
+    handleMessage(message).then(sendResponse, error => sendResponse?.({ ok: false, error: String(error) }));
+    return true;
 });
 
 async function handleMessage(message: ExtensionMessage) {

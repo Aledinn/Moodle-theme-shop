@@ -1,15 +1,15 @@
 import type { Theme } from "./theme-storage";
 
-export async function insertCss(tab: chrome.tabs.Tab, css: string) {
-    chrome.scripting.insertCSS({
-        target: { tabId: tab.id! },
+export async function insertCss(tab: chrome.tabs.Tab, css: string, documentId?: string) {
+    await chrome.scripting.insertCSS({
+        target: { tabId: tab.id!, ...(documentId ? { documentIds: [documentId] } : {}) },
         css
     });
 }
 
-export async function removeCss(tab: chrome.tabs.Tab, css: string) {
-    chrome.scripting.removeCSS({
-        target: { tabId: tab.id! },
+export async function removeCss(tab: chrome.tabs.Tab, css: string, documentId?: string) {
+    await chrome.scripting.removeCSS({
+        target: { tabId: tab.id!, ...(documentId ? { documentIds: [documentId] } : {}) },
         css
     });
 }

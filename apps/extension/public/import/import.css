@@ -1,0 +1,8 @@
+body { margin: 0; padding: 2rem; background: #f6f7fa; color: #172033; font: 16px/1.6 system-ui, sans-serif; }
+main { max-width: 44rem; margin: auto; padding: 2rem; background: white; border: 1px solid #d1d5db; border-radius: .75rem; }
+label, dt { display: block; font-weight: 600; }
+input, button { font: inherit; max-width: 100%; }
+button { padding: .6rem 1rem; cursor: pointer; }
+button:disabled { cursor: default; }
+dd { margin: 0 0 .75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+#status, #target { overflow-wrap: anywhere; }

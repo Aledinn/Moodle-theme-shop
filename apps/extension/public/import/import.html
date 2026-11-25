@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Import Moodle theme</title>
+    <link rel="stylesheet" href="import.css">
+</head>
+<body>
+    <main>
+        <h1>Import a theme</h1>
+        <p>Target: <strong id="target">Checking captured Moodle tab…</strong></p>
+        <p>Keep that tab open on the same page. To change targets, open this extension from the intended Moodle tab again.</p>
+        <label for="file">Theme JSON file</label>
+        <input id="file" type="file" accept=".json,application/json" disabled>
+        <dl id="preview"></dl>
+        <button id="apply" disabled>Confirm import and apply to target</button>
+        <p id="status" role="status" aria-live="polite">Checking target…</p>
+    </main>
+    <script type="module" src="../import.js"></script>
+</body>
+</html>

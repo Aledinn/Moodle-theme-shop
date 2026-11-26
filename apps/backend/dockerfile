@@ -2,25 +2,27 @@
 
 FROM golang:1.26.4 AS build-stage
 
-WORKDIR /app
+WORKDIR /repo/apps/backend
 
-COPY go.mod go.sum ./
+COPY apps/backend/go.mod apps/backend/go.sum ./
 
 RUN go mod download
 
-COPY cmd/server/*.go ./cmd/server/
-COPY internal/ ./internal/
+COPY apps/backend/cmd/ ./cmd/
+COPY apps/backend/internal/ ./internal/
+COPY apps/backend/migrations/ ./migrations/
+COPY contracts/theme/ /repo/contracts/theme/
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /moodle-shop-image ./cmd/server
 
 FROM  build-stage AS run-test-stage
-RUN go test -v ./internal/themes/...
+RUN go test -count=1 -v ./...
 
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
 
 WORKDIR /
 
-COPY --from=build-stage /moodle-shop-image /moodle-shop-image
+COPY --from=run-test-stage /moodle-shop-image /moodle-shop-image
 
 EXPOSE 8080
 

@@ -25,7 +25,8 @@ services:
 
   backend:
     build:
-      context: ./apps/backend
+      context: .
+      dockerfile: apps/backend/dockerfile
     depends_on:
       bootstrap:
         condition: service_completed_successfully

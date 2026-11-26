@@ -67,8 +67,10 @@ change has no unresolved blocking findings; it does not grant merge permission.
 Use `BLOCKED` when missing evidence or an unavailable environment prevents a
 conclusion. Cosmetic suggestions should not block a correct change.
 
-GitHub Actions currently runs Go tests and extension typecheck, Chromium contract
-tests and the extension build. Path filters mean docs-only PRs may have no app
+GitHub Actions runs Go and initialized database tests, extension checks, website
+typecheck/tests/build, local browser import and container smoke verification.
+See [CI verification](docs/ci-verification.md) for equivalent local commands.
+Path filters mean docs-only PRs may have no app
 checks. Do not claim remote branch protections enforce a review merely because
 this document asks for one. AI review using the author's GitHub account is posted
 as a clearly identified comment, not presented as another person's approval.

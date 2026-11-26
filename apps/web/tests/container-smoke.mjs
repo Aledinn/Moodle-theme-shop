@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { setTimeout } from "node:timers/promises";
 import { chromium } from "playwright";
@@ -21,6 +21,7 @@ function compose(command, { input, capture = false } = {}) {
 }
 
 let browser;
+let page;
 try {
   compose(["up", "--build", "--wait", "--wait-timeout", "180"]);
   const port = compose(["port", "web", "8080"], { capture: true }).trim().split(":").at(-1);
@@ -59,7 +60,8 @@ try {
   assert.equal((await get("/themes/123", { method: "POST", headers: { Accept: "text/html" } })).status, 404);
 
   browser = await chromium.launch();
-  const page = await browser.newPage();
+  page = await browser.newPage();
+  await page.context().tracing.start({ screenshots: true, snapshots: true });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(origin);
@@ -96,7 +98,14 @@ try {
   assert.ok(recovered, "API recovers after container replacement without restarting Nginx");
   console.log(`Container smoke passed: ${project}; fresh DB, catalog, details refresh, download, errors, assets, outage and recovery.`);
 } catch (error) {
-  compose(["logs", "--tail=60"]);
+  await mkdir(".cache/ci", { recursive: true });
+  try {
+    await writeFile(".cache/ci/containers.log", compose(["logs", "--no-color", "--tail=150"], { capture: true }));
+    await page?.screenshot({ path: ".cache/ci/container-failure.png", fullPage: true });
+    await page?.context().tracing.stop({ path: ".cache/ci/container-trace.zip" });
+  } catch (diagnosticError) {
+    console.error("Could not collect all container diagnostics:", diagnosticError);
+  }
   throw error;
 } finally {
   await browser?.close();

@@ -47,6 +47,9 @@ not a public publication API.
 
 ## Verification
 
+For the bounded, disposable CI database harness and the test-gated Docker build
+from the repository root, see [CI verification](../../docs/ci-verification.md).
+
 From `apps/backend`:
 
 ```powershell

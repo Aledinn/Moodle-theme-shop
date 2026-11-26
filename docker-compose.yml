@@ -17,7 +17,8 @@ services:
     depends_on:
       - db 
     build:
-      context: ./apps/backend
+      context: .
+      dockerfile: apps/backend/dockerfile
     container_name: backend
     hostname: backend
     networks:

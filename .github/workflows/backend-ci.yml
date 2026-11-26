@@ -7,19 +7,29 @@ on:
     paths:
       - "apps/backend/**"
       - "contracts/theme/**"
-      - ".github/workflows/backend-ci.yml"
+      - ".dockerignore"
+      - "*compose*.yml"
+      - ".github/workflows/**"
+      - "tools/ci/**"
   pull_request:
     branches:
       - main
     paths:
       - "apps/backend/**"
       - "contracts/theme/**"
-      - ".github/workflows/backend-ci.yml"
+      - ".dockerignore"
+      - "*compose*.yml"
+      - ".github/workflows/**"
+      - "tools/ci/**"
+
+permissions:
+  contents: read
 
 jobs:
   test:
     name: Go tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     defaults:
       run:
@@ -34,23 +44,15 @@ jobs:
         with:
           go-version-file: apps/backend/go.mod
 
-      - name: Start isolated CockroachDB
-        run: |
-          docker run -d --name theme-api-db -p 127.0.0.1:26257:26257 cockroachdb/cockroach:v25.4.17 start-single-node --insecure --store=type=mem,size=1GiB
-          for attempt in $(seq 1 30); do
-            if docker exec theme-api-db cockroach sql --insecure --execute='SELECT 1'; then
-              exit 0
-            fi
-            sleep 2
-          done
-          docker logs theme-api-db
-          exit 1
+      - name: Run Go and initialized database integration tests
+        working-directory: .
+        run: bash tools/ci/backend-tests.sh
 
-      - name: Run tests including database integration
-        env:
-          TEST_DATABASE_URL: postgresql://root@127.0.0.1:26257/defaultdb?sslmode=disable
-        run: go test -count=1 ./...
-
-      - name: Stop isolated CockroachDB
-        if: always()
-        run: docker rm -f theme-api-db
+      - name: Retain failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/ci/backend/
+          retention-days: 7
+          include-hidden-files: true

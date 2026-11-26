@@ -7,19 +7,25 @@ on:
     paths:
       - "apps/extension/**"
       - "contracts/theme/**"
-      - ".github/workflows/extension-ci.yml"
+      - ".github/workflows/**"
+      - "tools/ci/**"
   pull_request:
     branches:
       - main
     paths:
       - "apps/extension/**"
       - "contracts/theme/**"
-      - ".github/workflows/extension-ci.yml"
+      - ".github/workflows/**"
+      - "tools/ci/**"
+
+permissions:
+  contents: read
 
 jobs:
   build:
     name: Typecheck and build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     defaults:
       run:

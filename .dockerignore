@@ -1,0 +1,16 @@
+# The backend needs only its source and the shared contract, never local secrets.
+**
+!apps/
+!apps/backend/
+!apps/backend/go.mod
+!apps/backend/go.sum
+!apps/backend/cmd/
+!apps/backend/cmd/**
+!apps/backend/internal/
+!apps/backend/internal/**
+!apps/backend/migrations/
+!apps/backend/migrations/**
+!apps/backend/dockerfile
+!contracts/
+!contracts/theme/
+!contracts/theme/**

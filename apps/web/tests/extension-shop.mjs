@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile, access } from 'node:fs/promises';
+import { readFile, access, mkdir } from 'node:fs/promises';
 import { createServer as createHttpServer } from 'node:http';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,6 +45,7 @@ try {
       channel: 'chromium', headless: true,
       args: [`--disable-extensions-except=${resolve(extension, 'dist')}`, `--load-extension=${resolve(extension, 'dist')}`],
     });
+    await context.tracing.start({ screenshots: true, snapshots: true });
     await context.route('https://themes.example.org/**', route => route.fulfill({ contentType: 'text/html', body: moodle }));
     let [worker] = context.serviceWorkers();
     worker ||= await context.waitForEvent('serviceworker');
@@ -105,6 +106,10 @@ try {
     context = undefined;
   }
   console.log('Shop migration passed: development + HTTPS production popup URLs, real catalog/download/import/apply, shop/extension target rejection, toggle/reload isolation, and retired embedded build.');
+} catch (error) {
+  await mkdir(resolve(web, '.cache/ci'), { recursive: true });
+  await context?.tracing.stop({ path: resolve(web, '.cache/ci/extension-trace.zip') }).catch(console.error);
+  throw error;
 } finally {
   delete process.env.VITE_SHOP_URL;
   delete process.env.VITE_API_BASE_URL;

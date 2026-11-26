@@ -32,6 +32,8 @@ Run checks from the relevant app directory. Use the versions in `go.mod`, CI and
 The extension tests run the shared fixtures in Chromium. This does not establish
 that an editor or install flow works on a real Moodle site; report such checks
 separately. GitHub Actions runs CI; local scratch scripts are not required CI.
+For the initialized database, local website/extension fixture, container smoke
+and release-gate checks, use [CI verification](docs/ci-verification.md).
 
 ## Project constraints
 

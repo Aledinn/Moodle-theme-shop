@@ -8,28 +8,35 @@ Starting with commit `b7126a9`, all future commits will be AI-assisted to accele
 
 ## Installation
 
-Make sure Docker, Node.js, and npm are installed.
+Use Docker with Linux containers/Compose v2, Node 24.15 or later in the Node 24
+line, npm and Chrome. Follow the [complete local walkthrough](docs/complete-flow.md)
+for a sample catalog and compatible target from a fresh checkout.
 
-Start the backend and database:
+Start the standalone website, API and initialized database:
 
 ```bash
-docker compose up --build
+docker compose -f compose.local.yml up --build --wait --wait-timeout 180
+# Optional local sample theme (requires Node):
+node tools/seed-local-theme.mjs
 ```
 
 Build the Chrome extension:
 
-```bash
+```powershell
 cd apps/extension
-npm install
+npm ci
+$env:VITE_SHOP_URL = 'http://127.0.0.1:8090/'
 npm run build
 ```
 
 Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the `apps/extension/dist` directory.
 
-The backend API will be available at `http://localhost:8080`.
+The website is available at `http://127.0.0.1:8090`, with its API under `/api`.
+The catalog starts empty unless explicitly seeded. This container origin exposes
+read/download APIs; the retained development upload needs a separately exposed API.
 
 The popup's **Browse themes on website** opens the standalone catalog in a normal
-browser tab. Start the website as described below, browse and download a theme,
+browser tab. Browse and download a theme,
 then return to the intended Moodle tab before opening **Import downloaded JSON**.
 The embedded shop and its direct-install message have been retired.
 

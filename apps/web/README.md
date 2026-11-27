@@ -124,6 +124,11 @@ hosting must route `/api/*` to Go and other application routes to `index.html`.
 The [local container setup](../../docs/local-containers.md) packages the built
 website and API behind Nginx at one loopback origin. `npm run test:containers`
 checks the actual images with a fresh isolated database and browser download.
+Install extension dependencies first: this check now continues that real container
+download through unpacked-extension import/application, editing/export, toggle
+and same-site reload. Run browser suites sequentially because they rebuild the
+same extension output. See the [complete flow walkthrough](../../docs/complete-flow.md)
+for fresh-checkout setup, coverage and current worker/multi-tab limitations.
 
 ## Theme details and downloads
 

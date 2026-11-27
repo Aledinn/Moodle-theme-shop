@@ -12,6 +12,13 @@ try {
     const config = await resolveConfig({ mode, logLevel: 'silent' }, 'build');
     assert.equal(JSON.parse(config.define['import.meta.env.VITE_SHOP_URL']), 'http://127.0.0.1:5173/');
     assert.equal(JSON.parse(config.define['import.meta.env.VITE_API_BASE_URL']), 'http://localhost:8080');
+    process.env.VITE_SHOP_URL = 'https://themes.example.org/archive/';
+    process.env.VITE_API_BASE_URL = 'https://api.example.org/v1/';
+    const configured = await resolveConfig({ mode, logLevel: 'silent' }, 'build');
+    assert.equal(JSON.parse(configured.define['import.meta.env.VITE_SHOP_URL']), 'https://themes.example.org/archive/');
+    assert.equal(JSON.parse(configured.define['import.meta.env.VITE_API_BASE_URL']), 'https://api.example.org/v1');
+    delete process.env.VITE_SHOP_URL;
+    delete process.env.VITE_API_BASE_URL;
   }
   for (const setting of ['VITE_SHOP_URL', 'VITE_API_BASE_URL']) {
     for (const value of ['', 'not a URL', 'javascript:alert(1)', 'http://public.example.org', 'https://user:password@example.org', 'https://example.org/?token=secret', 'https://example.org/#fragment']) {

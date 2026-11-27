@@ -33,7 +33,9 @@ try {
   process.env.WEB_API_TARGET = api;
   server = await createServer({ root: web, server: { host: '127.0.0.1', port: 0, strictPort: false }, logLevel: 'error' });
   await server.listen();
-  const shopOrigin = `http://127.0.0.1:${server.httpServer.address().port}`;
+  // The container check supplies its real Nginx/Go/database origin. Otherwise
+  // exercise the independently configurable Vite proxy with the controlled API.
+  const shopOrigin = process.env.FLOW_SHOP_URL || `http://127.0.0.1:${server.httpServer.address().port}`;
   for (const mode of ['development', 'production']) {
     const shopUrl = mode === 'development' ? `${shopOrigin}/` : 'https://themes.example.org/archive/';
     process.env.VITE_SHOP_URL = shopUrl;
@@ -45,6 +47,7 @@ try {
       channel: 'chromium', headless: true,
       args: [`--disable-extensions-except=${resolve(extension, 'dist')}`, `--load-extension=${resolve(extension, 'dist')}`],
     });
+    context.setDefaultTimeout(15_000);
     await context.tracing.start({ screenshots: true, snapshots: true });
     await context.route('https://themes.example.org/**', route => route.fulfill({ contentType: 'text/html', body: moodle }));
     let [worker] = context.serviceWorkers();
@@ -68,7 +71,9 @@ try {
       await shop.getByRole('button', { name: 'Download theme JSON', exact: true }).click();
       const download = await downloadEvent;
       const path = await download.path();
-      assert.deepEqual(await readFile(path), source);
+      assert.equal(await download.failure(), null);
+      assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), portable);
+      if (!process.env.FLOW_SHOP_URL) assert.deepEqual(await readFile(path), source);
       await target.bringToFront();
       // A fresh popup captures the intended Moodle tab after browsing.
       await popup.reload();
@@ -85,6 +90,41 @@ try {
       assert.notEqual(await shop.locator('h1').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(18, 52, 86)');
       const stored = await worker.evaluate(async () => (await chrome.storage.local.get('installedThemes')).installedThemes);
       assert.deepEqual(stored.themesBySite[portable.site], portable);
+
+      // Continue with the very theme downloaded above, through the existing core
+      // extension lifecycle. No synthetic storage setup substitutes for import.
+      await target.bringToFront();
+      await popup.evaluate(() => chrome.runtime.sendMessage({ type: 'toggle_theme' }));
+      await target.waitForFunction(() => getComputedStyle(document.querySelector('h1')).backgroundColor !== 'rgb(18, 52, 86)');
+      await target.reload();
+      assert.notEqual(await target.locator('h1').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(18, 52, 86)');
+      await popup.evaluate(() => chrome.runtime.sendMessage({ type: 'toggle_theme' }));
+      await target.waitForFunction(() => getComputedStyle(document.querySelector('h1')).backgroundColor === 'rgb(18, 52, 86)');
+      await target.reload();
+      await target.waitForFunction(() => getComputedStyle(document.querySelector('h1')).backgroundColor === 'rgb(18, 52, 86)');
+      await popup.evaluate(() => chrome.runtime.sendMessage({ type: 'open_editor' }));
+      await target.locator('#mts_select_element').waitFor();
+      await popup.evaluate(() => chrome.runtime.sendMessage({ type: 'chosen_element', selector: 'h1.course-title' }));
+      await popup.evaluate(() => chrome.runtime.sendMessage({ type: 'update_selected_style', property: 'background-color', value: '#654321' }));
+      await target.waitForFunction(() => getComputedStyle(document.querySelector('h1')).backgroundColor === 'rgb(101, 67, 33)');
+      const edited = await worker.evaluate(async () => (await chrome.storage.local.get('installedThemes')).installedThemes.themesBySite['127.0.0.1']);
+      assert.equal(edited.rules.find(rule => rule.selector === 'h1.course-title').properties['background-color'], '#654321');
+      await popup.evaluate(() => chrome.runtime.sendMessage({ type: 'export_json' }));
+      // chrome.downloads creates an extension-owned download, rather than a
+      // download event on the Moodle page. Inspect the actual downloads entry.
+      const exported = await worker.evaluate(async () => {
+        for (let attempt = 0; attempt < 100; attempt++) {
+          const files = await chrome.downloads.search({ orderBy: ['-startTime'] });
+          const file = files.find(item => item.url.startsWith('data:application/json'));
+          if (file) return file;
+          await new Promise(done => setTimeout(done, 20));
+        }
+        throw new Error('No extension export download created');
+      });
+      assert.deepEqual(JSON.parse(decodeURIComponent(exported.url.split(',').slice(1).join(','))), edited);
+      await target.reload();
+      await target.waitForFunction(() => getComputedStyle(document.querySelector('h1')).backgroundColor === 'rgb(101, 67, 33)');
+      assert.deepEqual(await worker.evaluate(async () => (await chrome.storage.local.get('installedThemes')).installedThemes.themesBySite['127.0.0.1']), edited);
     }
     // Same hostname as the Moodle fixture, different origin. Even Moodle markers
     // and a stored enabled theme must not make the shop an application target.
@@ -105,7 +145,7 @@ try {
     await context.close();
     context = undefined;
   }
-  console.log('Shop migration passed: development + HTTPS production popup URLs, real catalog/download/import/apply, shop/extension target rejection, toggle/reload isolation, and retired embedded build.');
+  console.log(`Complete shop flow passed (${process.env.FLOW_SHOP_URL ? 'container API' : 'controlled API'}): catalog -> details -> download -> explicit import/apply; editor, exported file, toggle, persistence/reload; development + HTTPS production popup URLs; shop/extension isolation; no embedded catalog.`);
 } catch (error) {
   await mkdir(resolve(web, '.cache/ci'), { recursive: true });
   await context?.tracing.stop({ path: resolve(web, '.cache/ci/extension-trace.zip') }).catch(console.error);

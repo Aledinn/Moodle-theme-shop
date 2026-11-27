@@ -32,14 +32,19 @@ try {
   assert.deepEqual(await empty.json(), { items: [], nextCursor: null }, "fresh volume starts empty");
 
   const fixture = JSON.parse(await readFile(new URL("../../../contracts/theme/fixtures/valid/editor-export.json", import.meta.url), "utf8"));
-  const sqlString = (value) => `'${value.replaceAll("'", "''")}'`;
-  const values = [fixture.name, fixture.site, fixture.author, fixture.description, fixture.version, JSON.stringify(fixture.rules)].map(sqlString);
-  compose(["exec", "-T", "db", "/cockroach/cockroach", "sql", "--insecure", "--database=mydb"], {
-    input: `INSERT INTO themes (id, name, site, author, description, version, rules) VALUES (9007199254740993, ${values.join(", ")});`,
-  });
+  // Exercise the documented fresh-checkout seeder, scoped to this test project.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    execFileSync(process.execPath, [fileURLToPath(new URL('../../../tools/seed-local-theme.mjs', import.meta.url))], {
+      cwd: root,
+      env: { ...process.env, COMPOSE_PROJECT_NAME: project, WEB_PORT: '0' },
+      stdio: 'inherit',
+      timeout: 30_000,
+    });
+  }
   const id = "9007199254740993";
   const catalog = await (await get("/api/themes?limit=1")).json();
   assert.equal(catalog.items[0].id, id);
+  assert.equal(catalog.nextCursor, null, 'repeated seeding keeps one sample');
   const download = await get(`/api/themes/${id}/download`);
   assert.equal(download.status, 200);
   assert.match(download.headers.get("content-type"), /application\/json/);
@@ -76,7 +81,17 @@ try {
   assert.equal(file.suggestedFilename(), `theme-${id}.json`);
   assert.equal(await file.failure(), null);
   assert.deepEqual(await readFile(await file.path()), bytes);
+  await page.getByText('Import downloaded JSON', { exact: false }).first().waitFor();
   assert.deepEqual(errors, []);
+
+  // Download from the actual container API and import into a real unpacked MV3
+  // extension on a separate, explicitly compatible 127.0.0.1 Moodle fixture.
+  execFileSync(process.execPath, [fileURLToPath(new URL('extension-shop.mjs', import.meta.url))], {
+    cwd: fileURLToPath(new URL('../', import.meta.url)),
+    env: { ...process.env, FLOW_SHOP_URL: origin },
+    stdio: 'inherit',
+    timeout: 180_000,
+  });
 
   execFileSync(process.execPath, [fileURLToPath(new URL("browser-smoke.mjs", import.meta.url))], {
     cwd: fileURLToPath(new URL("../", import.meta.url)),
@@ -89,6 +104,9 @@ try {
   compose(["stop", "backend"]);
   assert.ok([502, 504].includes((await get("/api/themes")).status), "API outage stays a gateway error");
   assert.equal((await get("/themes/123", { headers: { Accept: "text/html" } })).status, 200);
+  await page.reload();
+  await page.getByRole('alert').waitFor();
+  assert.equal(await page.getByRole('button', { name: 'Download theme JSON', exact: true }).count(), 0);
   compose(["up", "-d", "--no-deps", "--force-recreate", "backend"]);
   let recovered = false;
   for (let attempt = 0; attempt < 30; attempt++) {
@@ -96,6 +114,8 @@ try {
     await setTimeout(1000);
   }
   assert.ok(recovered, "API recovers after container replacement without restarting Nginx");
+  await page.getByRole('button', { name: 'Try again', exact: true }).click();
+  await page.getByRole('heading', { name: fixture.name, exact: true }).waitFor();
   console.log(`Container smoke passed: ${project}; fresh DB, catalog, details refresh, download, errors, assets, outage and recovery.`);
 } catch (error) {
   await mkdir(".cache/ci", { recursive: true });

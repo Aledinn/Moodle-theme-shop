@@ -43,6 +43,8 @@ npm run typecheck
 npm test
 npm run build
 npm run test:extension
+npm run test:catalog
+npm run test:details
 npm run test:containers
 cd ../..
 node tools/ci/check-release-gate.mjs
@@ -57,8 +59,17 @@ a real university Moodle installation.
 
 `test:containers` builds the production website and backend and tests them through
 the Nginx origin with fresh initialized data, browser downloads, deep-link refresh,
-API errors, outage and recovery. Each invocation uses a unique Compose project,
+API errors, outage and recovery. It also runs the complete unpacked-extension
+journey against the real container download, including editor/export/toggle and
+saved-rule reload. Install extension dependencies before this check and run the
+commands sequentially because browser checks rebuild the same extension output.
+Each invocation uses a unique Compose project,
 volume and host port and removes only those resources.
+
+The [complete flow walkthrough](complete-flow.md) maps acceptance areas to the
+checks and records the current multi-tab and service-worker limitations. Website
+CI also runs the catalog/details browser suites without an installed extension;
+extension CI covers rejected imports and stale or incompatible target documents.
 
 The backend Dockerfile now takes the **repository root** as context:
 

@@ -73,6 +73,10 @@ For a manual check, start the stack above, visit the catalog, and fetch
 `/assets/missing.js` (404, never the app shell). With a record present, open
 `/themes/{id}` directly, refresh, and use **Download theme JSON**. On an empty
 catalog `/themes/0` still loads the app and displays **Theme not found**.
+To add a deterministic sample explicitly, run `node tools/seed-local-theme.mjs`
+from the repository root after startup. The sample supports `127.0.0.1` and is
+retained between starts; existing rows are not replaced. Follow the
+[complete flow walkthrough](complete-flow.md) for compatible-target import.
 Use the automated isolated fixture check for a successful real download without
 adding sample records to your developer database.
 

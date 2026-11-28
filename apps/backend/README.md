@@ -45,6 +45,39 @@ Malformed IDs on legacy detail requests also return 400. This does not introduce
 publication controls: use curated fixtures locally; the development upload is
 not a public publication API.
 
+## Health, readiness and shutdown
+
+Probe Go directly on port 8080. `GET /health` is liveness: it returns 200 without
+contacting the database. `GET /ready` is readiness: it checks the required theme
+table/columns (including an empty table) and returns 200 when usable, or 503 on
+database/schema failure, timeout or shutdown. Errors do not expose database details.
+Use `/ready` for future startup/readiness probes and `/health` for liveness.
+These endpoints are not routed through the website's `/api` prefix.
+
+Timeout settings accept positive Go durations, such as `500ms` or `10s`:
+
+| Environment variable | Default |
+| --- | --- |
+| `HTTP_HEADER_TIMEOUT` | `5s` |
+| `HTTP_READ_TIMEOUT` | `15s` |
+| `HTTP_WRITE_TIMEOUT` | `20s` |
+| `HTTP_IDLE_TIMEOUT` | `60s` |
+| `REQUEST_TIMEOUT` | `10s` |
+| `READINESS_TIMEOUT` | `2s` |
+| `SHUTDOWN_TIMEOUT` | `15s` |
+
+Invalid or inconsistent settings fail startup. Require header <= read < write
+and readiness <= request < write. HTTP timeouts return 503 and cancel datastore
+contexts; stalled driver cancellation cannot hold the HTTP response open.
+Database connection establishment also has a five-second limit.
+
+SIGINT/SIGTERM withdraw readiness and stop accepting connections, then drain
+in-flight HTTP requests before closing the database. At the shutdown deadline,
+remaining connections are closed and the process reports a shutdown error.
+Compose allows 20 seconds before forced termination; increase its
+`stop_grace_period` when raising `SHUTDOWN_TIMEOUT`. Startup still waits up to
+35 seconds for a database connection; readiness additionally requires the schema.
+
 ## Verification
 
 For the bounded, disposable CI database harness and the test-gated Docker build

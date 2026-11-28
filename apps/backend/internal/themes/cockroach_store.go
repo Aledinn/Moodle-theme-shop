@@ -14,6 +14,17 @@ func NewCockroachStore(db *sql.DB) *CockroachStore {
 	return &CockroachStore{db: db}
 }
 
+// CheckReady verifies the actual columns and permissions required by the API,
+// including an empty but initialized table. A database ping alone misses schema loss.
+func (s *CockroachStore) CheckReady(ctx context.Context) error {
+	rows, err := s.db.QueryContext(ctx, `SELECT id, name, site, author, description, version, rules FROM themes LIMIT 0`)
+	if err != nil {
+		return fmt.Errorf("check theme schema: %w", err)
+	}
+	defer rows.Close()
+	return rows.Err()
+}
+
 func (s *CockroachStore) List(ctx context.Context) ([]ThemeSummary, error) {
 	const query = `SELECT id, name, site ,author, description, version FROM themes`
 	return s.list(ctx, query)

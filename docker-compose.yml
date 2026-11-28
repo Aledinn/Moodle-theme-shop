@@ -14,6 +14,7 @@ services:
     command : start-single-node --insecure
 
   backend:
+    stop_grace_period: 20s
     depends_on:
       - db 
     build:

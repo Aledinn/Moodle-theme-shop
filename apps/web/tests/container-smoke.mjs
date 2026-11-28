@@ -100,6 +100,27 @@ try {
     timeout: 120_000,
   });
 
+  // Probe Go directly on the Compose network; these operational endpoints are
+  // intentionally separate from the browser's /api routing.
+  const probe = (path) => compose(['exec', '-T', 'web', 'sh', '-c',
+    `wget -T 8 -S -O /dev/null http://backend:8080/${path} 2>&1 || true`], { capture: true });
+  assert.match(probe('ready'), /HTTP\/1\.1 200/);
+  compose(['pause', 'db']);
+  try {
+    const start = Date.now();
+    assert.match(probe('ready'), /HTTP\/1\.1 503/, 'stalled database is not ready');
+    assert.ok(Date.now() - start < 7000, 'readiness failure is bounded');
+    assert.match(probe('health'), /HTTP\/1\.1 200/, 'liveness survives database loss');
+  } finally {
+    compose(['unpause', 'db']);
+  }
+  let ready = false;
+  for (let attempt = 0; attempt < 30; attempt++) {
+    if (/HTTP\/1\.1 200/.test(probe('ready'))) { ready = true; break; }
+    await setTimeout(1000);
+  }
+  assert.ok(ready, 'readiness recovers without restarting Go');
+
   // Recreating Go exercises Docker DNS resolution as well as outage behavior.
   compose(["stop", "backend"]);
   assert.ok([502, 504].includes((await get("/api/themes")).status), "API outage stays a gateway error");

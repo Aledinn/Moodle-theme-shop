@@ -40,7 +40,7 @@ func databasehandler() *sql.DB {
 }
 */
 func RoachDb(ctx context.Context) (*sql.DB, error) {
-	pgConnString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s sslmode=disable",
+	pgConnString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s sslmode=disable connect_timeout=5",
 		os.Getenv("PGHOST"), os.Getenv("PGPORT"), os.Getenv("PGDATABASE"), os.Getenv("PGUSER"))
 	if password := os.Getenv("PGPASSWORD"); password != "" {
 		pgConnString += fmt.Sprintf(" password=%s", password)

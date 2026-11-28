@@ -66,6 +66,11 @@ commands sequentially because browser checks rebuild the same extension output.
 Each invocation uses a unique Compose project,
 volume and host port and removes only those resources.
 
+The container check also pauses the database to require bounded `/ready` failure
+while `/health` stays live, then verifies readiness recovery without restarting
+Go. Backend tests cover schema loss/recovery and signal-triggered draining of an
+in-flight request, including forced connection closure at the shutdown deadline.
+
 The [complete flow walkthrough](complete-flow.md) maps acceptance areas to the
 checks and records the current multi-tab and service-worker limitations. Website
 CI also runs the catalog/details browser suites without an installed extension;
